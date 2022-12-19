@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SmartKeyboard</string>
+    <string name="session_settings">Session settings</string>
+    <string name="logging_settings">Logging Settings</string>
 </resources>

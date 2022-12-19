@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/sessionSettings"
+        android:icon="@drawable/ic_baseline_app_settings_alt_24"
+        android:title="@string/session_settings"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/logSettings"
+        android:icon="@drawable/ic_baseline_text_snippet_24"
+        android:title="@string/logging_settings"
+        app:showAsAction="ifRoom"/>
+</menu>
