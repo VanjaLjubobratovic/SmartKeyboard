@@ -3,14 +3,15 @@
     <string name="session_settings">Session settings</string>
     <string name="logging_settings">Logging Settings</string>
     <string name="phrase_to_input">Phrase to input</string>
-    <string name="generate_phrase">Tap to generate a new phrase</string>
+    <string name="generate_phrase">New session not yet started</string>
     <string name="session_info">Session info</string>
-    <string name="time">Time:</string>
-    <string name="phrase_count">Phrase count:</string>
-    <string name="user">User:</string>
-    <string name="tested_keyboard">Tested keyboard:</string>
-    <string name="handling">Handling:</string>
-    <string name="native_keyboard">Native keyboard:</string>
-    <string name="current_phrase_info">Current phrase info:</string>
+    <string name="time">Time: </string>
+    <string name="phrase_count">Phrase count: </string>
+    <string name="user">User: </string>
+    <string name="tested_keyboard">Tested keyboard: </string>
+    <string name="handling">Handling: </string>
+    <string name="native_keyboard">Native keyboard: </string>
+    <string name="current_phrase_info">Current phrase info: </string>
     <string name="type_phrase_here">Type phrase here</string>
+    <string name="fresh_session">Fresh session</string>
 </resources>

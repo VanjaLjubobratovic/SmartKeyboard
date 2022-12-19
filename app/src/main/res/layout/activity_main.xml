@@ -43,9 +43,10 @@
             android:textSize="15sp"
             android:textAllCaps="false"
             android:textAlignment="viewStart"
+            android:enabled="false"
             app:backgroundTint="@color/white"
             app:strokeColor="@color/light_gray"
-            app:strokeWidth="2dp" />
+            app:strokeWidth="2dp"/>
 
         <TextView
             android:layout_width="wrap_content"
