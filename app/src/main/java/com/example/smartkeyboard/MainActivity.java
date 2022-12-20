@@ -8,11 +8,15 @@ import androidx.appcompat.widget.Toolbar;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,12 +37,12 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity {
 
     private MaterialButton generateBtn;
-    /*private ArrayList<Integer> usedPhrases;
-    private int phrase_index;*/
-
     private ArrayList<String> phrases;
-    private int numOfPhrases, phraseIndex;
+    private int phraseIndex;
+    private EditText phraseInput;
     private TextView timeTV, userTV, phraseCountTV, testKeyboardTV, handlingTV, nativeKeyboardTV;
+
+    private Session session;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,26 +58,33 @@ public class MainActivity extends AppCompatActivity {
         timeTV = findViewById(R.id.timeTV);
         phraseCountTV = findViewById(R.id.countTV);
 
-        //TODO: Read from settings
-        numOfPhrases = 40;
-
         phrases = readPhrases();
+        session = new Session();
 
+        phraseInput = findViewById(R.id.transcribeET);
 
-        //TODO: Delete this when certain it is no longer necessary
-        //usedPhrases = new ArrayList<>();
-        /*generateBtn.setOnClickListener(view -> {
-            if(phrases != null) {
-                do {
-                    Random r = new Random();
-                    phrase_index = r.nextInt(phrases.size());
-                } while (usedPhrases.contains(phrase_index));
-
-                generateBtn.setText(phrases.get(phrase_index));
-            } else {
-                Log.e("RANDOM_PHRASE", "Phrases list empty!");
+        phraseInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
             }
-        });*/
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (!session.isSet()) {
+                    Toast.makeText(MainActivity.this, "New session not started", Toast.LENGTH_SHORT).show();
+                    phraseInput.getText().clear();
+                } else {
+                    if(!session.transcribe(charSequence.toString())) {
+                        phraseInput.getText().clear();
+                        nextPhrase();
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
     }
 
     @Override
@@ -129,6 +140,13 @@ public class MainActivity extends AppCompatActivity {
         return readLines;
     }
 
+    public void nextPhrase() {
+        phraseCountTV.setText(R.string.phrase_count);
+        phraseCountTV.append(" " + session.getSize() + "/" + session.getNumOfPhrases());
+
+        generateBtn.setText(phrases.get(session.getSize()));
+    }
+
     public void initTestSession() {
         //TODO: Finish initializing. Add checking if user is set.
         if(phrases != null) {
@@ -136,11 +154,13 @@ public class MainActivity extends AppCompatActivity {
             Collections.shuffle(phrases);
             generateBtn.setText(phrases.get(phraseIndex));
 
+            session = new Session();
+
             timeTV.setText(R.string.time);
             timeTV.append(" 00:00");
 
             phraseCountTV.setText(R.string.phrase_count);
-            phraseCountTV.append(" 0/" + numOfPhrases);
+            phraseCountTV.append(" 0/" + session.getNumOfPhrases());
 
             Toast.makeText(getApplicationContext(),"New session initialized", Toast.LENGTH_SHORT).show();
         } else {
