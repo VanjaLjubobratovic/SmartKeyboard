@@ -1,21 +1,26 @@
 package com.example.smartkeyboard;
 
+import android.os.SystemClock;
 import android.util.Log;
 import android.util.Pair;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class Session {
     private String user, sessionID, testedKeyboard, nativeKeyboard;
     private int numOfPhrases;
+    private long startTime;
     private Orientation orientation;
     private TypingMode typingMode;
 
     //Pair<RawTranscription, FinalTranscription>
     private ArrayList<Pair<String, String>> transcribed;
+    private ArrayList<Integer> time;
 
     public Session() {
         this.transcribed = new ArrayList<>();
+        this.time = new ArrayList<>();
         this.numOfPhrases = 40;
         this.nextPhrase();
     }
@@ -84,6 +89,15 @@ public class Session {
         this.typingMode = typingMode;
     }
 
+    public String getTime() {
+        int last = time.size() - 1;
+        return " " + this.time.get(last) / 1000  + ":" + this.time.get(last) % 100 + "s";
+    }
+
+    public void addTime(Integer measured) {
+        this.time.add(measured);
+    }
+
     public int getSize() {
         if (transcribed.size() == 0) {
             return 0;
@@ -102,7 +116,12 @@ public class Session {
 
         if(newInput.length() != 0 && newInput.charAt(newInput.length() - 1) == '\n') {
             nextPhrase();
+            timerStop();
             return false;
+        }
+
+        if(transcribed.get(index).first.length() == 0) {
+            timerStart();
         }
 
         if (transcribed.get(index).second.length() > newInput.length()) {
@@ -117,6 +136,15 @@ public class Session {
 
         Log.d("TRANSCRIBE", "RAW: " + transcribed.get(index).first + " || TRANSCRIBED: " + transcribed.get(index).second);
         return true;
+    }
+
+    public void timerStart() {
+        startTime = SystemClock.elapsedRealtime();
+    }
+
+    public void timerStop() {
+        long elapsedTime = (SystemClock.elapsedRealtime() - startTime);
+        time.add((int) elapsedTime);
     }
 
     public boolean isSet() {

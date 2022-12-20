@@ -144,6 +144,9 @@ public class MainActivity extends AppCompatActivity {
         phraseCountTV.setText(R.string.phrase_count);
         phraseCountTV.append(" " + session.getSize() + "/" + session.getNumOfPhrases());
 
+        timeTV.setText(R.string.time);
+        timeTV.append(" " + session.getTime());
+
         generateBtn.setText(phrases.get(session.getSize()));
     }
 
