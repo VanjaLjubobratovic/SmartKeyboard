@@ -7,6 +7,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -61,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
         phrases = readPhrases();
         session = new Session();
 
+
+
         phraseInput = findViewById(R.id.transcribeET);
 
         phraseInput.addTextChangedListener(new TextWatcher() {
@@ -106,6 +109,11 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.sessionSettings:
                 //TODO: Open session settings
+
+                Intent myIntent = new Intent(MainActivity.this, SessionSettingsActivity.class);
+                //myIntent.putExtra("key", value); //Optional parameters
+                MainActivity.this.startActivity(myIntent);
+
                 Log.d(TAG, "onOptionsItemSelected: SESSION SETTINGS");
 
             case R.id.initTestSession:
