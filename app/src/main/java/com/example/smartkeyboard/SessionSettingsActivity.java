@@ -1,5 +1,6 @@
 package com.example.smartkeyboard;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -14,7 +15,8 @@ public class SessionSettingsActivity extends AppCompatActivity {
     private EditText username, sessionName, keyboard, phraseNumber;
     private RadioGroup interactionGroup, orientationGroup;
     private RadioButton oneHand, twoThumb, cradle, portrait, landscape;
-    private String interaction, orientation;
+    private TypingMode interaction;
+    private Orientation orientation;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,15 +42,15 @@ public class SessionSettingsActivity extends AppCompatActivity {
                 switch(i){
                     case R.id.radioOneHand:
                         Toast.makeText(SessionSettingsActivity.this, "One hand selected", Toast.LENGTH_SHORT).show();
-                        interaction = "One hand";
+                        interaction = TypingMode.ONE_HAND;
                         break;
                     case R.id.radioTwoThumbs:
                         Toast.makeText(SessionSettingsActivity.this, "Two thumbs selected", Toast.LENGTH_SHORT).show();
-                        interaction = "Two thumbs";
+                        interaction = TypingMode.TWO_THUMBS;
                         break;
                     case R.id.radioCradle:
                         Toast.makeText(SessionSettingsActivity.this, "Cradle selected", Toast.LENGTH_SHORT).show();
-                        interaction = "Cradle";
+                        interaction = TypingMode.CRADLING;
                         break;
                 }
             }
@@ -60,15 +62,28 @@ public class SessionSettingsActivity extends AppCompatActivity {
                 switch(i){
                     case R.id.radioPortrait:
                         Toast.makeText(SessionSettingsActivity.this, "Portrait selected", Toast.LENGTH_SHORT).show();
-                        orientation = "Portrait";
+                        orientation = Orientation.PORTRAIT;
                         break;
                     case R.id.radioLandscape:
                         Toast.makeText(SessionSettingsActivity.this, "Landscape selected", Toast.LENGTH_SHORT).show();
-                        orientation = "Landscape";
+                        orientation = Orientation.LANDSCAPE;
                         break;
                 }
             }
         });
 
+    }
+    protected void onDestroy() {
+        Intent intent = new Intent();
+        Session session = new Session();
+        session.setUser(username.getText().toString());
+        session.setSessionID(sessionName.getText().toString());
+        session.setTestedKeyboard(keyboard.getText().toString());
+        session.setNumOfPhrases(Integer.parseInt(phraseNumber.getText().toString()));
+        session.setOrientation(orientation);
+        session.setTypingMode(interaction);
+        intent.putExtra("sessionDetails", session);
+        setResult(49, intent);
+        super.onDestroy();
     }
 }

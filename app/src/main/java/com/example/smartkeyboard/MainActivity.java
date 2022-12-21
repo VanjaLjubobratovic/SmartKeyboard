@@ -1,5 +1,9 @@
 package com.example.smartkeyboard;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -178,4 +182,16 @@ public class MainActivity extends AppCompatActivity {
             Log.e("RANDOM_PHRASE", "Phrases list empty!");
         }
     }
+
+    ActivityResultLauncher<Intent> activityLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            Intent intent = result.getData();
+            try{
+                //TODO: Read the sent object, need to work on parceable
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    });
 }
