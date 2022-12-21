@@ -1,5 +1,9 @@
 package com.example.smartkeyboard;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,6 +11,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -61,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
         phrases = readPhrases();
         session = new Session();
 
+
+
         phraseInput = findViewById(R.id.transcribeET);
 
         phraseInput.addTextChangedListener(new TextWatcher() {
@@ -106,6 +113,11 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.sessionSettings:
                 //TODO: Open session settings
+
+                Intent myIntent = new Intent(MainActivity.this, SessionSettingsActivity.class);
+                //myIntent.putExtra("key", value); //Optional parameters
+                MainActivity.this.startActivity(myIntent);
+
                 Log.d(TAG, "onOptionsItemSelected: SESSION SETTINGS");
 
             case R.id.initTestSession:
@@ -170,4 +182,16 @@ public class MainActivity extends AppCompatActivity {
             Log.e("RANDOM_PHRASE", "Phrases list empty!");
         }
     }
+
+    ActivityResultLauncher<Intent> activityLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            Intent intent = result.getData();
+            try{
+                //TODO: Read the sent object, need to work on parceable
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    });
 }
