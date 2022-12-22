@@ -23,4 +23,16 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="username">Username</string>
+    <string name="session_name">Session name</string>
+    <string name="keyboard">Keyboard</string>
+    <string name="number_of_phrases">Number of phrases</string>
+    <string name="interaction_style">Interaction style</string>
+    <string name="one_hand">One hand</string>
+    <string name="two_thumbs">Two thumbs</string>
+    <string name="cradle">Cradle</string>
+    <string name="orientation">Orientation</string>
+    <string name="portrait">Portrait</string>
+    <string name="landscape">Landscape</string>
+    <string name="default_phrases_num">40</string>
 </resources>

@@ -2,6 +2,7 @@ package com.example.smartkeyboard;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -21,6 +22,7 @@ public class SessionSettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.session_settings);
         username = findViewById(R.id.txtUsername);
         sessionName = findViewById(R.id.txtSessionName);
@@ -73,7 +75,9 @@ public class SessionSettingsActivity extends AppCompatActivity {
         });
 
     }
-    protected void onDestroy() {
+
+    @Override
+    public void onBackPressed() {
         Intent intent = new Intent();
         Session session = new Session();
         session.setUser(username.getText().toString());
@@ -84,6 +88,6 @@ public class SessionSettingsActivity extends AppCompatActivity {
         session.setTypingMode(interaction);
         intent.putExtra("sessionDetails", session);
         setResult(49, intent);
-        super.onDestroy();
+        super.onBackPressed();
     }
 }

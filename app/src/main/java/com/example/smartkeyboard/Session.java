@@ -23,6 +23,8 @@ public class Session implements Parcelable {
         nativeKeyboard = in.readString();
         numOfPhrases = in.readInt();
         startTime = in.readLong();
+        typingMode = TypingMode.valueOf(in.readString());
+        orientation = Orientation.valueOf(in.readString());
     }
 
     //Pair<RawTranscription, FinalTranscription>
@@ -30,10 +32,14 @@ public class Session implements Parcelable {
     private ArrayList<Integer> time;
 
     public Session() {
-        this.transcribed = new ArrayList<>();
-        this.time = new ArrayList<>();
         this.numOfPhrases = 40;
-        this.nextPhrase();
+        this.user = "";
+        this.sessionID = "";
+        this.testedKeyboard = "";
+        this.nativeKeyboard = "";
+        this.orientation = Orientation.PORTRAIT;
+        this.typingMode = TypingMode.TWO_THUMBS;
+        this.clearData();
     }
 
     public static final Creator<Session> CREATOR = new Creator<Session>() {
@@ -161,6 +167,12 @@ public class Session implements Parcelable {
         return true;
     }
 
+    public void clearData() {
+        this.transcribed = new ArrayList<>();
+        this.time = new ArrayList<>();
+        this.nextPhrase();
+    }
+
     public void timerStart() {
         startTime = SystemClock.elapsedRealtime();
     }
@@ -197,5 +209,7 @@ public class Session implements Parcelable {
         parcel.writeString(nativeKeyboard);
         parcel.writeInt(numOfPhrases);
         parcel.writeLong(startTime);
+        parcel.writeString(typingMode.name());
+        parcel.writeString(orientation.name());
     }
 }

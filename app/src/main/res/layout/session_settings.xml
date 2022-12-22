@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:paddingLeft="12dp"
+    android:paddingStart="12dp"
     android:paddingTop="10dp"
     android:layout_height="match_parent">
 
@@ -11,7 +11,7 @@
         android:id="@+id/labelUsername"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Username"
+        android:text="@string/username"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
-        android:textSize="14dp"
+        android:textSize="@dimen/session_settings_size"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/labelUsername" />
 
@@ -30,7 +30,7 @@
         android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Session name"
+        android:text="@string/session_name"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtUsername" />
 
@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:textSize="14dp"
+        android:textSize="@dimen/session_settings_size"
         android:inputType="textPersonName"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/labelSessionName" />
@@ -49,7 +49,7 @@
         android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Keyboard"
+        android:text="@string/keyboard"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtSessionName" />
 
@@ -58,7 +58,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:textSize="14dp"
+        android:textSize="@dimen/session_settings_size"
         android:inputType="textPersonName"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/labelKeyboard" />
@@ -68,7 +68,7 @@
         android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Number of phrases"
+        android:text="@string/number_of_phrases"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtKeyboard" />
 
@@ -77,8 +77,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:inputType="textPersonName"
-        android:textSize="14dp"
+        android:inputType="number"
+        android:text="@string/default_phrases_num"
+        android:textSize="@dimen/session_settings_size"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/labelNumberOfPhrases" />
 
@@ -87,7 +88,7 @@
         android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Interaction style"
+        android:text="@string/interaction_style"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtNumberOfPhrases" />
 
@@ -105,21 +106,21 @@
             android:id="@+id/radioOneHand"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="One hand" />
+            android:text="@string/one_hand" />
 
         <RadioButton
             android:id="@+id/radioTwoThumbs"
             android:layout_width="match_parent"
             android:layout_marginLeft="5dp"
             android:layout_height="wrap_content"
-            android:text="Two thumbs" />
+            android:text="@string/two_thumbs" />
 
         <RadioButton
             android:id="@+id/radioCradle"
             android:layout_width="match_parent"
             android:layout_marginLeft="5dp"
             android:layout_height="wrap_content"
-            android:text="Cradle" />
+            android:text="@string/cradle" />
     </RadioGroup>
 
     <TextView
@@ -127,7 +128,7 @@
         android:id="@+id/labelOrientation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Orientation"
+        android:text="@string/orientation"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/radioGroupInteraction" />
 
@@ -145,14 +146,14 @@
             android:id="@+id/radioPortrait"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Portrait" />
+            android:text="@string/portrait" />
 
         <RadioButton
             android:id="@+id/radioLandscape"
             android:layout_marginLeft="5dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Landscape" />
+            android:text="@string/landscape" />
     </RadioGroup>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -60,13 +60,15 @@ public class MainActivity extends AppCompatActivity {
 
         generateBtn = findViewById(R.id.phraseGenerateBtn);
 
+        userTV = findViewById(R.id.userTV);
+        testKeyboardTV = findViewById(R.id.keyboardTV);
+        handlingTV = findViewById(R.id.handlingTV);
+        nativeKeyboardTV = findViewById(R.id.nativeKeyboardTV);
         timeTV = findViewById(R.id.timeTV);
         phraseCountTV = findViewById(R.id.countTV);
 
         phrases = readPhrases();
         session = new Session();
-
-
 
         phraseInput = findViewById(R.id.transcribeET);
 
@@ -116,13 +118,14 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent myIntent = new Intent(MainActivity.this, SessionSettingsActivity.class);
                 //myIntent.putExtra("key", value); //Optional parameters
-                MainActivity.this.startActivity(myIntent);
-
+                activityLauncher.launch(myIntent);
                 Log.d(TAG, "onOptionsItemSelected: SESSION SETTINGS");
+                return true;
 
             case R.id.initTestSession:
                 initTestSession();
                 Log.d(TAG, "onOptionsItemSelected: SESSION INIT");
+                return true;
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -169,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
             Collections.shuffle(phrases);
             generateBtn.setText(phrases.get(phraseIndex));
 
-            session = new Session();
+            session.clearData();
 
             timeTV.setText(R.string.time);
             timeTV.append(" 00:00");
@@ -177,21 +180,37 @@ public class MainActivity extends AppCompatActivity {
             phraseCountTV.setText(R.string.phrase_count);
             phraseCountTV.append(" 0/" + session.getNumOfPhrases());
 
+            userTV.setText(R.string.user);
+            userTV.append(session.getUser());
+
+            testKeyboardTV.setText(R.string.tested_keyboard);
+            testKeyboardTV.append(session.getTestedKeyboard());
+
+            handlingTV.setText(R.string.handling);
+            handlingTV.append(session.getTypingMode().toString());
+
+            //TODO: Read native keyboard
+            nativeKeyboardTV.setText(R.string.native_keyboard);
+            nativeKeyboardTV.append(session.getNativeKeyboard());
+
             Toast.makeText(getApplicationContext(),"New session initialized", Toast.LENGTH_SHORT).show();
         } else {
             Log.e("RANDOM_PHRASE", "Phrases list empty!");
         }
     }
 
-    ActivityResultLauncher<Intent> activityLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
+    ActivityResultLauncher<Intent> activityLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        if(result.getResultCode() == 49) {
             Intent intent = result.getData();
-            try{
-                //TODO: Read the sent object, need to work on parceable
-            } catch (Exception e){
-                e.printStackTrace();
+            if (intent != null) {
+                session = intent.getParcelableExtra("sessionDetails");
+                Log.d("ACTIVITY_RESULT", session.getSessionID());
+                initTestSession();
+            } else {
+                Toast.makeText(this, "Intent null", Toast.LENGTH_SHORT).show();
             }
+        } else {
+            Toast.makeText(this, "Result code not 49" + " " + result.getResultCode(), Toast.LENGTH_SHORT).show();
         }
     });
 }
