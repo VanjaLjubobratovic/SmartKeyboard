@@ -1,5 +1,7 @@
 package com.example.smartkeyboard;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Pair;
@@ -7,12 +9,21 @@ import android.util.Pair;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-public class Session {
+public class Session implements Parcelable {
     private String user, sessionID, testedKeyboard, nativeKeyboard;
     private int numOfPhrases;
     private long startTime;
     private Orientation orientation;
     private TypingMode typingMode;
+
+    protected Session(Parcel in){
+        user = in.readString();
+        sessionID = in.readString();
+        testedKeyboard = in.readString();
+        nativeKeyboard = in.readString();
+        numOfPhrases = in.readInt();
+        startTime = in.readLong();
+    }
 
     //Pair<RawTranscription, FinalTranscription>
     private ArrayList<Pair<String, String>> transcribed;
@@ -24,6 +35,18 @@ public class Session {
         this.numOfPhrases = 40;
         this.nextPhrase();
     }
+
+    public static final Creator<Session> CREATOR = new Creator<Session>() {
+        @Override
+        public Session createFromParcel(Parcel in) {
+            return new Session(in);
+        }
+
+        @Override
+        public Session[] newArray(int size) {
+            return new Session[size];
+        }
+    };
 
     public int getNumOfPhrases() {
         return numOfPhrases;
@@ -159,5 +182,20 @@ public class Session {
             //TODO: this back to false after testing
             return true;
         }
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(user);
+        parcel.writeString(sessionID);
+        parcel.writeString(testedKeyboard);
+        parcel.writeString(nativeKeyboard);
+        parcel.writeInt(numOfPhrases);
+        parcel.writeLong(startTime);
     }
 }
