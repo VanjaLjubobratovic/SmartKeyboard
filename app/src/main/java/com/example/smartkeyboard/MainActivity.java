@@ -12,6 +12,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -71,6 +72,24 @@ public class MainActivity extends AppCompatActivity {
         session = new Session();
 
         phraseInput = findViewById(R.id.transcribeET);
+
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+
+        String usernamePref, sessionPref, keyboardPref, phraseNumberPref, orientationPref, interactionPref;
+
+        usernamePref = sharedPref.getString("username", "username");
+        sessionPref = sharedPref.getString("session_name", "session1");
+        keyboardPref = sharedPref.getString("keyboard", "default");
+        phraseNumberPref = sharedPref.getString("number_of_phrases", "40");
+        orientationPref = sharedPref.getString("orientation", "PORTRAIT");
+        interactionPref = sharedPref.getString("interaction", "TWO_THUMBS");
+
+        session.setUser(usernamePref);
+        session.setSessionID(sessionPref);
+        session.setTestedKeyboard(keyboardPref);
+        session.setNumOfPhrases(Integer.parseInt(phraseNumberPref));
+        session.setOrientation(Orientation.valueOf(orientationPref));
+        session.setTypingMode(TypingMode.valueOf(interactionPref));
 
         phraseInput.addTextChangedListener(new TextWatcher() {
             @Override

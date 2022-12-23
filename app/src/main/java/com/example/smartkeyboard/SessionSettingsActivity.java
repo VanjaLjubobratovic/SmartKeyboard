@@ -1,6 +1,8 @@
 package com.example.smartkeyboard;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
@@ -23,6 +25,18 @@ public class SessionSettingsActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+
+        String usernamePref, sessionPref, keyboardPref, phraseNumberPref, orientationPref, interactionPref;
+
+        usernamePref = sharedPref.getString("username", "username");
+        sessionPref = sharedPref.getString("session_name", "session1");
+        keyboardPref = sharedPref.getString("keyboard", "default");
+        phraseNumberPref = sharedPref.getString("number_of_phrases", "40");
+        orientationPref = sharedPref.getString("orientation", "PORTRAIT");
+        interactionPref = sharedPref.getString("interaction", "TWO_THUMBS");
+
+
         setContentView(R.layout.session_settings);
         username = findViewById(R.id.txtUsername);
         sessionName = findViewById(R.id.txtSessionName);
@@ -40,6 +54,27 @@ public class SessionSettingsActivity extends AppCompatActivity {
 
         interaction = TypingMode.TWO_THUMBS;
         orientation = Orientation.PORTRAIT;
+
+        username.setText(usernamePref);
+        sessionName.setText(sessionPref);
+        keyboard.setText(keyboardPref);
+        phraseNumber.setText(phraseNumberPref);
+
+        switch(interactionPref){
+            case("TWO_THUMBS"): twoThumb.setChecked(true);
+            break;
+            case("ONE_HAND"): oneHand.setChecked(true);
+            break;
+            case("CRADLING"): cradle.setChecked(true);
+            break;
+        }
+
+        switch(orientationPref){
+            case("PORTRAIT"): portrait.setChecked(true);
+                break;
+            case("LANDSCAPE"): landscape.setChecked(true);
+                break;
+        }
 
         interactionGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -83,14 +118,46 @@ public class SessionSettingsActivity extends AppCompatActivity {
     public void onBackPressed() {
         Intent intent = new Intent();
         Session session = new Session();
-        session.setUser(username.getText().toString());
-        session.setSessionID(sessionName.getText().toString());
-        session.setTestedKeyboard(keyboard.getText().toString());
-        session.setNumOfPhrases(Integer.parseInt(phraseNumber.getText().toString()));
+
+        String usernameString = username.getText().toString();
+        String sessionNameString = sessionName.getText().toString();
+        String keyboardString = keyboard.getText().toString();
+        String numberOfPhrases = phraseNumber.getText().toString();
+
+        if(usernameString.isEmpty()){
+            usernameString = "username";
+        }
+        if(sessionNameString.isEmpty()){
+            sessionNameString = "session1";
+        }
+        if(keyboardString.isEmpty()){
+            keyboardString = "default";
+        }
+        if(numberOfPhrases.isEmpty()){
+            numberOfPhrases = "40";
+        }
+
+        session.setUser(usernameString);
+        session.setSessionID(sessionNameString);
+        session.setTestedKeyboard(keyboardString);
+        session.setNumOfPhrases(Integer.parseInt(numberOfPhrases));
         session.setOrientation(orientation);
         session.setTypingMode(interaction);
         intent.putExtra("sessionDetails", session);
         setResult(49, intent);
+
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor myEdit = sharedPref.edit();
+
+        myEdit.putString("username", usernameString);
+        myEdit.putString("session_name", sessionNameString);
+        myEdit.putString("keyboard", keyboardString);
+        myEdit.putString("number_of_phrases", numberOfPhrases);
+        myEdit.putString("interaction", interaction.toString());
+        myEdit.putString("orientation", orientation.toString());
+
+        myEdit.commit();
+
         super.onBackPressed();
     }
 }
