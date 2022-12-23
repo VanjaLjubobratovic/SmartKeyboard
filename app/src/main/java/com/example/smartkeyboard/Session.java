@@ -110,6 +110,17 @@ public class Session implements Parcelable {
         this.orientation = orientation;
     }
 
+    public void setOrientation (String orientation) {
+        switch (orientation) {
+            case("PORTRAIT"):
+                this.orientation = Orientation.PORTRAIT;
+                break;
+            case("LANDSCAPE"):
+                this.orientation = Orientation.LANDSCAPE;
+                break;
+        }
+    }
+
     public TypingMode getTypingMode() {
         return typingMode;
     }
@@ -118,13 +129,23 @@ public class Session implements Parcelable {
         this.typingMode = typingMode;
     }
 
-    public String getTime() {
-        int last = time.size() - 1;
-        return " " + this.time.get(last) / 1000  + ":" + this.time.get(last) % 100 + "s";
+    public void setTypingMode (String typingMode) {
+        switch(typingMode){
+            case("TWO_THUMBS"):
+                this.typingMode = TypingMode.TWO_THUMBS;
+                break;
+            case("ONE_HAND"):
+                this.typingMode = TypingMode.ONE_HAND;
+                break;
+            case("CRADLING"):
+                this.typingMode = TypingMode.CRADLING;
+                break;
+        }
     }
 
-    public void addTime(Integer measured) {
-        this.time.add(measured);
+    public String getTime() {
+        int last = time.size() - 1;
+        return " " + this.time.get(last) / 1000  + "." + this.time.get(last) % 100 + "s";
     }
 
     public int getSize() {
@@ -157,9 +178,10 @@ public class Session implements Parcelable {
 
 
         if (transcribed.get(index).second.length() > newInput.length()) {
-            sb.append("-");
+            sb.append("<");
         } else if (sb.length() == 0) {
-            //Ovo služi jer se text changed okine nakon povratka iz settingsa
+            /*This is here because for some reason onTextChanged is triggered
+            when returning from session settings*/
             sb.append(newInput);
         } else {
             sb.append(newInput.charAt(newInput.length() - 1));

@@ -21,21 +21,13 @@ public class SessionSettingsActivity extends AppCompatActivity {
     private TypingMode interaction;
     private Orientation orientation;
 
+    private String usernamePref, sessionPref, keyboardPref, phraseNumberPref, orientationPref, interactionPref;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-
-        String usernamePref, sessionPref, keyboardPref, phraseNumberPref, orientationPref, interactionPref;
-
-        usernamePref = sharedPref.getString("username", "username");
-        sessionPref = sharedPref.getString("session_name", "session1");
-        keyboardPref = sharedPref.getString("keyboard", "default");
-        phraseNumberPref = sharedPref.getString("number_of_phrases", "40");
-        orientationPref = sharedPref.getString("orientation", "PORTRAIT");
-        interactionPref = sharedPref.getString("interaction", "TWO_THUMBS");
-
+        checkMemory();
 
         setContentView(R.layout.session_settings);
         username = findViewById(R.id.txtUsername);
@@ -114,6 +106,17 @@ public class SessionSettingsActivity extends AppCompatActivity {
 
     }
 
+    private void checkMemory() {
+        SharedPreferences sharedPref = getSharedPreferences("sessionSettings", Context.MODE_PRIVATE);
+
+        usernamePref = sharedPref.getString("username", "username");
+        sessionPref = sharedPref.getString("session_name", "session1");
+        keyboardPref = sharedPref.getString("keyboard", "default");
+        phraseNumberPref = sharedPref.getString("number_of_phrases", "40");
+        orientationPref = sharedPref.getString("orientation", "PORTRAIT");
+        interactionPref = sharedPref.getString("interaction", "TWO_THUMBS");
+    }
+
     @Override
     public void onBackPressed() {
         Intent intent = new Intent();
@@ -137,6 +140,7 @@ public class SessionSettingsActivity extends AppCompatActivity {
             numberOfPhrases = "40";
         }
 
+        //Sending back to MainActivity
         session.setUser(usernameString);
         session.setSessionID(sessionNameString);
         session.setTestedKeyboard(keyboardString);
@@ -146,7 +150,9 @@ public class SessionSettingsActivity extends AppCompatActivity {
         intent.putExtra("sessionDetails", session);
         setResult(49, intent);
 
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+
+        //Saving to SP
+        SharedPreferences sharedPref = getSharedPreferences("sessionSettings", Context.MODE_PRIVATE);
         SharedPreferences.Editor myEdit = sharedPref.edit();
 
         myEdit.putString("username", usernameString);
@@ -155,7 +161,6 @@ public class SessionSettingsActivity extends AppCompatActivity {
         myEdit.putString("number_of_phrases", numberOfPhrases);
         myEdit.putString("interaction", interaction.toString());
         myEdit.putString("orientation", orientation.toString());
-
         myEdit.commit();
 
         super.onBackPressed();
