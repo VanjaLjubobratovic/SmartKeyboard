@@ -38,6 +38,9 @@ public class SessionSettingsActivity extends AppCompatActivity {
         portrait = findViewById(R.id.radioPortrait);
         landscape = findViewById(R.id.radioLandscape);
 
+        interaction = TypingMode.TWO_THUMBS;
+        orientation = Orientation.PORTRAIT;
+
         interactionGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {

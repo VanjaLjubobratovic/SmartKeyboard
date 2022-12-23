@@ -113,7 +113,8 @@
             android:layout_width="match_parent"
             android:layout_marginLeft="5dp"
             android:layout_height="wrap_content"
-            android:text="@string/two_thumbs" />
+            android:text="@string/two_thumbs"
+            android:checked="true"/>
 
         <RadioButton
             android:id="@+id/radioCradle"
@@ -146,7 +147,8 @@
             android:id="@+id/radioPortrait"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/portrait" />
+            android:text="@string/portrait"
+            android:checked="true"/>
 
         <RadioButton
             android:id="@+id/radioLandscape"

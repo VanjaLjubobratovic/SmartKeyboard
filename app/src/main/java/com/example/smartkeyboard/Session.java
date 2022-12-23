@@ -16,6 +16,10 @@ public class Session implements Parcelable {
     private Orientation orientation;
     private TypingMode typingMode;
 
+    //Pair<RawTranscription, FinalTranscription>
+    private ArrayList<Pair<String, String>> transcribed;
+    private ArrayList<Integer> time;
+
     protected Session(Parcel in){
         user = in.readString();
         sessionID = in.readString();
@@ -26,10 +30,6 @@ public class Session implements Parcelable {
         typingMode = TypingMode.valueOf(in.readString());
         orientation = Orientation.valueOf(in.readString());
     }
-
-    //Pair<RawTranscription, FinalTranscription>
-    private ArrayList<Pair<String, String>> transcribed;
-    private ArrayList<Integer> time;
 
     public Session() {
         this.numOfPhrases = 40;
@@ -143,19 +143,23 @@ public class Session implements Parcelable {
         int index = getSize();
         StringBuilder sb = new StringBuilder(transcribed.get(index).first);
 
+        //Check if enter is pressed to cycle to next phrase
         if(newInput.length() != 0 && newInput.charAt(newInput.length() - 1) == '\n') {
             nextPhrase();
             timerStop();
             return false;
         }
 
+        //First letter, timer start
         if(transcribed.get(index).first.length() == 0) {
             timerStart();
         }
 
+
         if (transcribed.get(index).second.length() > newInput.length()) {
             sb.append("-");
         } else if (sb.length() == 0) {
+            //Ovo služi jer se text changed okine nakon povratka iz settingsa
             sb.append(newInput);
         } else {
             sb.append(newInput.charAt(newInput.length() - 1));
