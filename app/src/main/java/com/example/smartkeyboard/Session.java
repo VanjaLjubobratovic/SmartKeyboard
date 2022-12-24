@@ -5,11 +5,11 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Pair;
-import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Dictionary;
-import java.util.concurrent.atomic.AtomicReferenceArray;
+import java.util.HashMap;
 
 public class Session implements Parcelable {
     private String user, sessionID, testedKeyboard, nativeKeyboard;
@@ -23,7 +23,7 @@ public class Session implements Parcelable {
     private ArrayList<Integer> time;
 
     //Array of key value pairs which will contain errors
-    private ArrayList<Dictionary<String, Double>> errors;
+    private ArrayList<HashMap<String, Double>> errors;
 
     protected Session(Parcel in){
         user = in.readString();
@@ -114,6 +114,26 @@ public class Session implements Parcelable {
     public void setOrientation(Orientation orientation) {
         this.orientation = orientation;
     }
+    
+    public String getErrorsString (int ind) {
+        HashMap<String, Double> errsMap;
+        
+        if (ind == -1) {
+            errsMap = this.errors.get(getSize() - 1);
+        } else if (ind > -1 && ind < this.errors.size()){
+            errsMap = this.errors.get(ind);
+        } else {
+            return "Invalid index";
+        }
+
+        if(errsMap != null) {
+            return "TER: " + String.format("%.2f", errsMap.get("TER")) + "\n"
+                    +  "NCER: " + String.format("%.2f", errsMap.get("NCER")) + "\n";
+        } else {
+            return "errsMap null";
+        }
+
+    }
 
     public void setOrientation (String orientation) {
         switch (orientation) {
@@ -171,6 +191,7 @@ public class Session implements Parcelable {
 
         //Check if enter is pressed to cycle to next phrase
         if(newInput.length() != 0 && newInput.charAt(newInput.length() - 1) == '\n') {
+            calculateErrors(newInput.substring(0, newInput.length() - 1));
             nextPhrase();
             timerStop();
             return false;
@@ -198,9 +219,56 @@ public class Session implements Parcelable {
         return true;
     }
 
+    private void calculateErrors(String truePhrase) {
+        String transcribed = this.transcribed.get(getSize()).second;
+
+        Log.d("ERRORS", truePhrase);
+
+        double C = 0;
+        double INF = 0;
+        double IF = 0;
+
+        int m = truePhrase.length();
+        int n = transcribed.length();
+
+        int[][] dp = new int[m+1][n+1];
+
+        for(int i = 0; i <= m; i++) {
+            for(int j = 0; j <= n; j++) {
+                if (i == 0) {
+                    dp[i][j] = j;
+                } else if (j == 0) {
+                    dp[i][j] = i;
+                } else if (truePhrase.charAt(i - 1) == transcribed.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = 1 + Math.min(Math.min(dp[i][j - 1], dp[i - 1][j]), dp[i - 1][j - 1]);
+                }
+            }
+        }
+
+        INF = dp[m][n];
+
+        if(m > n) {
+            C = m - INF;
+        } else {
+            C = n - INF;
+        }
+
+        double NCER = (INF / (C + INF + IF)) * 100;
+        double TER = ((INF + IF) / (C + INF + IF)) * 100;
+
+        HashMap<String, Double> err = new HashMap<>();
+        err.put("NCER", NCER);
+        err.put("TER", TER);
+
+        errors.add(err);
+    }
+
     public void clearData() {
         this.transcribed = new ArrayList<>();
         this.time = new ArrayList<>();
+        this.errors = new ArrayList<>();
         this.nextPhrase();
     }
 

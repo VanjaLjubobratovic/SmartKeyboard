@@ -182,7 +182,8 @@ public class MainActivity extends AppCompatActivity {
         String currentInfo = "Time: " + session.getTime() + "\n"
                 + "Phrase given: " + generateBtn.getText() + "\n"
                 + "Transcribed: " + session.getTranscribed().get(session.getSize() - 1).second + "\n"
-                + "Raw input: " + session.getTranscribed().get(session.getSize() - 1).first + "\n";
+                + "Raw input: " + session.getTranscribed().get(session.getSize() - 1).first + "\n"
+                + session.getErrorsString(-1);
 
         phraseResultTV.setText(currentInfo);
 
