@@ -10,9 +10,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.renderscript.ScriptGroup;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -21,6 +25,7 @@ import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> phrases;
     private int phraseIndex;
     private EditText phraseInput;
-    private TextView timeTV, userTV, phraseCountTV, testKeyboardTV, handlingTV, nativeKeyboardTV;
+    private TextView timeTV, userTV, phraseCountTV, testKeyboardTV, handlingTV, nativeKeyboardTV, phraseResultTV;
 
     private Session session;
 
@@ -59,18 +64,21 @@ public class MainActivity extends AppCompatActivity {
         myToolbar.showOverflowMenu();
 
         generateBtn = findViewById(R.id.phraseGenerateBtn);
-
         userTV = findViewById(R.id.userTV);
         testKeyboardTV = findViewById(R.id.keyboardTV);
         handlingTV = findViewById(R.id.handlingTV);
         nativeKeyboardTV = findViewById(R.id.nativeKeyboardTV);
         timeTV = findViewById(R.id.timeTV);
         phraseCountTV = findViewById(R.id.countTV);
+        phraseResultTV = findViewById(R.id.phraseResultsTV);
+        phraseInput = findViewById(R.id.transcribeET);
 
         phrases = readPhrases();
         session = new Session();
 
-        phraseInput = findViewById(R.id.transcribeET);
+        checkMemory();
+        setSessionText();
+
 
         phraseInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -96,6 +104,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void checkMemory() {
+        SharedPreferences sharedPref = getSharedPreferences("sessionSettings", Context.MODE_PRIVATE);
+
+        session.setUser(sharedPref.getString("username", "username"));
+        session.setSessionID(sharedPref.getString("session_name", "session1"));
+        session.setTestedKeyboard(sharedPref.getString("keyboard", "default"));
+        session.setNumOfPhrases(Integer.parseInt(sharedPref.getString("number_of_phrases", "40")));
+        session.setOrientation(sharedPref.getString("orientation", "PORTRAIT"));
+        session.setTypingMode(sharedPref.getString("interaction", "TWO_THUMBS"));
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar, menu);
@@ -114,10 +133,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             case R.id.sessionSettings:
-                //TODO: Open session settings
-
                 Intent myIntent = new Intent(MainActivity.this, SessionSettingsActivity.class);
-                //myIntent.putExtra("key", value); //Optional parameters
                 activityLauncher.launch(myIntent);
                 Log.d(TAG, "onOptionsItemSelected: SESSION SETTINGS");
                 return true;
@@ -162,7 +178,27 @@ public class MainActivity extends AppCompatActivity {
         timeTV.setText(R.string.time);
         timeTV.append(" " + session.getTime());
 
+        //TODO: give this to session class to handle
+        String currentInfo = "Time: " + session.getTime() + "\n"
+                + "Phrase given: " + generateBtn.getText() + "\n"
+                + "Transcribed: " + session.getTranscribed().get(session.getSize() - 1).second + "\n"
+                + "Raw input: " + session.getTranscribed().get(session.getSize() - 1).first + "\n";
+
+        phraseResultTV.setText(currentInfo);
+
         generateBtn.setText(phrases.get(session.getSize()));
+
+        //Hide keyboard
+        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+        View view = MainActivity.this.getCurrentFocus();
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+
+        //Check if done
+        if (session.getSize() == session.getNumOfPhrases()) {
+            phraseInput.setEnabled(false);
+            generateBtn.setText("New session not yet started");
+            Toast.makeText(this, "You have successfully finished with this session!", Toast.LENGTH_LONG).show();
+        }
     }
 
     public void initTestSession() {
@@ -171,32 +207,49 @@ public class MainActivity extends AppCompatActivity {
             phraseIndex = 0;
             Collections.shuffle(phrases);
             generateBtn.setText(phrases.get(phraseIndex));
+            phraseInput.setEnabled(true);
 
             session.clearData();
 
-            timeTV.setText(R.string.time);
-            timeTV.append(" 00:00");
-
-            phraseCountTV.setText(R.string.phrase_count);
-            phraseCountTV.append(" 0/" + session.getNumOfPhrases());
-
-            userTV.setText(R.string.user);
-            userTV.append(session.getUser());
-
-            testKeyboardTV.setText(R.string.tested_keyboard);
-            testKeyboardTV.append(session.getTestedKeyboard());
-
-            handlingTV.setText(R.string.handling);
-            handlingTV.append(session.getTypingMode().toString());
-
-            //TODO: Read native keyboard
-            nativeKeyboardTV.setText(R.string.native_keyboard);
-            nativeKeyboardTV.append(session.getNativeKeyboard());
+            setSessionText();
 
             Toast.makeText(getApplicationContext(),"New session initialized", Toast.LENGTH_SHORT).show();
         } else {
             Log.e("RANDOM_PHRASE", "Phrases list empty!");
         }
+    }
+
+    public void setSessionText() {
+        timeTV.setText(R.string.time);
+        timeTV.append(" 00.00");
+
+        phraseCountTV.setText(R.string.phrase_count);
+        phraseCountTV.append(" 0/" + session.getNumOfPhrases());
+
+        userTV.setText(R.string.user);
+        userTV.append(" " + session.getUser());
+
+        testKeyboardTV.setText(R.string.tested_keyboard);
+        testKeyboardTV.append(" " + session.getTestedKeyboard());
+
+        handlingTV.setText(R.string.handling);
+        handlingTV.append(" " + session.getTypingMode().toString() + " @ " + session.getOrientation());
+
+        //checkIfInputChanged();
+
+        nativeKeyboardTV.setText(R.string.native_keyboard);
+        nativeKeyboardTV.append(" " + session.getNativeKeyboard());
+
+        phraseResultTV.setText("");
+    }
+
+
+    private void checkIfInputChanged() {
+        //TODO: Fix
+        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+        session.setNativeKeyboard(Settings.Secure.getString(getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD));
+        nativeKeyboardTV.setText(R.string.native_keyboard);
+        nativeKeyboardTV.append(" " + session.getNativeKeyboard());
     }
 
     ActivityResultLauncher<Intent> activityLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {

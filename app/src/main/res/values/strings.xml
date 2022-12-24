@@ -35,4 +35,7 @@
     <string name="portrait">Portrait</string>
     <string name="landscape">Landscape</string>
     <string name="default_phrases_num">40</string>
+    <string name="username_default">username</string>
+    <string name="session1">session1</string>
+    <string name="default_keyboard">default</string>
 </resources>

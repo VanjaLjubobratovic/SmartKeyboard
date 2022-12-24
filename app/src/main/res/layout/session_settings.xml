@@ -17,6 +17,7 @@
 
     <EditText
         android:id="@+id/txtUsername"
+        android:text="@string/username_default"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -37,6 +38,7 @@
     <EditText
         android:id="@+id/txtSessionName"
         android:layout_width="wrap_content"
+        android:text="@string/session1"
         android:layout_height="wrap_content"
         android:ems="10"
         android:textSize="@dimen/session_settings_size"
@@ -58,6 +60,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:text="@string/default_keyboard"
         android:textSize="@dimen/session_settings_size"
         android:inputType="textPersonName"
         app:layout_constraintStart_toStartOf="parent"

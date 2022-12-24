@@ -5,8 +5,10 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Pair;
+import android.view.inputmethod.InputMethodManager;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class Session implements Parcelable {
@@ -19,6 +21,9 @@ public class Session implements Parcelable {
     //Pair<RawTranscription, FinalTranscription>
     private ArrayList<Pair<String, String>> transcribed;
     private ArrayList<Integer> time;
+
+    //Array of key value pairs which will contain errors
+    private ArrayList<Dictionary<String, Double>> errors;
 
     protected Session(Parcel in){
         user = in.readString();
@@ -110,6 +115,17 @@ public class Session implements Parcelable {
         this.orientation = orientation;
     }
 
+    public void setOrientation (String orientation) {
+        switch (orientation) {
+            case("PORTRAIT"):
+                this.orientation = Orientation.PORTRAIT;
+                break;
+            case("LANDSCAPE"):
+                this.orientation = Orientation.LANDSCAPE;
+                break;
+        }
+    }
+
     public TypingMode getTypingMode() {
         return typingMode;
     }
@@ -118,13 +134,23 @@ public class Session implements Parcelable {
         this.typingMode = typingMode;
     }
 
-    public String getTime() {
-        int last = time.size() - 1;
-        return " " + this.time.get(last) / 1000  + ":" + this.time.get(last) % 100 + "s";
+    public void setTypingMode (String typingMode) {
+        switch(typingMode){
+            case("TWO_THUMBS"):
+                this.typingMode = TypingMode.TWO_THUMBS;
+                break;
+            case("ONE_HAND"):
+                this.typingMode = TypingMode.ONE_HAND;
+                break;
+            case("CRADLING"):
+                this.typingMode = TypingMode.CRADLING;
+                break;
+        }
     }
 
-    public void addTime(Integer measured) {
-        this.time.add(measured);
+    public String getTime() {
+        int last = time.size() - 1;
+        return " " + this.time.get(last) / 1000  + "." + this.time.get(last) % 100 + "s";
     }
 
     public int getSize() {
@@ -157,9 +183,10 @@ public class Session implements Parcelable {
 
 
         if (transcribed.get(index).second.length() > newInput.length()) {
-            sb.append("-");
+            sb.append("<");
         } else if (sb.length() == 0) {
-            //Ovo služi jer se text changed okine nakon povratka iz settingsa
+            /*This is here because for some reason onTextChanged is triggered
+            when returning from session settings*/
             sb.append(newInput);
         } else {
             sb.append(newInput.charAt(newInput.length() - 1));
