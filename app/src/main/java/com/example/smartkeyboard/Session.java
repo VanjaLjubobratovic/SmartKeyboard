@@ -5,8 +5,10 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Pair;
+import android.view.inputmethod.InputMethodManager;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class Session implements Parcelable {
@@ -19,6 +21,9 @@ public class Session implements Parcelable {
     //Pair<RawTranscription, FinalTranscription>
     private ArrayList<Pair<String, String>> transcribed;
     private ArrayList<Integer> time;
+
+    //Array of key value pairs which will contain errors
+    private ArrayList<Dictionary<String, Double>> errors;
 
     protected Session(Parcel in){
         user = in.readString();

@@ -15,6 +15,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.renderscript.ScriptGroup;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -231,13 +233,23 @@ public class MainActivity extends AppCompatActivity {
         testKeyboardTV.append(" " + session.getTestedKeyboard());
 
         handlingTV.setText(R.string.handling);
-        handlingTV.append(" " + session.getTypingMode().toString());
+        handlingTV.append(" " + session.getTypingMode().toString() + " @ " + session.getOrientation());
 
-        //TODO: Read native keyboard
+        //checkIfInputChanged();
+
         nativeKeyboardTV.setText(R.string.native_keyboard);
         nativeKeyboardTV.append(" " + session.getNativeKeyboard());
 
         phraseResultTV.setText("");
+    }
+
+
+    private void checkIfInputChanged() {
+        //TODO: Fix
+        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+        session.setNativeKeyboard(Settings.Secure.getString(getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD));
+        nativeKeyboardTV.setText(R.string.native_keyboard);
+        nativeKeyboardTV.append(" " + session.getNativeKeyboard());
     }
 
     ActivityResultLauncher<Intent> activityLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
