@@ -11,7 +11,9 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -139,13 +141,31 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             case R.id.initTestSession:
-                initTestSession();
+                initSessionConfirm();
+                //initTestSession();
                 Log.d(TAG, "onOptionsItemSelected: SESSION INIT");
                 return true;
 
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    public void initSessionConfirm() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage(R.string.init_message)
+                .setTitle(R.string.init_title)
+                .setCancelable(false);
+
+        builder.setPositiveButton(R.string.OK, (dialogInterface, i) -> {
+            initTestSession();
+        });
+
+        builder.setNegativeButton(R.string.cancel, ((dialogInterface, i) -> {
+        }));
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     public ArrayList<String> readPhrases() {
@@ -155,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
             String line = reader.readLine();
 
             while(line != null) {
-                readLines.add(line);
+                readLines.add(line.toLowerCase());
                 line = reader.readLine();
                 //Log.d("FILE_READ", "Read line: " + line);
             }

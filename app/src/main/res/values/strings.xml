@@ -38,4 +38,8 @@
     <string name="username_default">username</string>
     <string name="session1">session1</string>
     <string name="default_keyboard">default</string>
+    <string name="OK">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="init_title">Initialize new session</string>
+    <string name="init_message">Are you sure you want to initialize a new session? Current session data will be lost.</string>
 </resources>
