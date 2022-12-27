@@ -5,10 +5,8 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Pair;
-import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.HashMap;
 
 public class Session implements Parcelable {
@@ -19,7 +17,9 @@ public class Session implements Parcelable {
     private TypingMode typingMode;
 
     //Pair<RawTranscription, FinalTranscription>
-    private ArrayList<Pair<String, String>> transcribed;
+    //private ArrayList<Pair<String, String>> transcribed;
+
+    private ArrayList<HashMap<String, String>> transcribed;
     private ArrayList<Integer> time;
 
     //Array of key value pairs which will contain errors
@@ -67,11 +67,19 @@ public class Session implements Parcelable {
         this.numOfPhrases = numOfPhrases;
     }
 
-    public ArrayList<Pair<String, String>> getTranscribed() {
+   /* public ArrayList<Pair<String, String>> getTranscribed() {
         return transcribed;
     }
 
     public void setTranscribed(ArrayList<Pair<String, String>> transcribed) {
+        this.transcribed = transcribed;
+    }*/
+
+    public ArrayList<HashMap<String, String>> getTranscribed() {
+        return transcribed;
+    }
+
+    public void setTranscribed(ArrayList<HashMap<String, String>> transcribed) {
         this.transcribed = transcribed;
     }
 
@@ -115,9 +123,10 @@ public class Session implements Parcelable {
         this.orientation = orientation;
     }
     
-    public String getErrorsString (int ind) {
+    public String getStatsString(int ind, String originalPhrase) {
         HashMap<String, Double> errsMap;
-        
+
+        //Error calculation
         if (ind == -1) {
             errsMap = this.errors.get(getSize() - 1);
         } else if (ind > -1 && ind < this.errors.size()){
@@ -128,11 +137,21 @@ public class Session implements Parcelable {
 
         if(errsMap != null) {
             return "TER: " + String.format("%.2f", errsMap.get("TER")) + "\n"
-                    +  "NCER: " + String.format("%.2f", errsMap.get("NCER")) + "\n";
+                    +  "NCER: " + String.format("%.2f", errsMap.get("NCER")) + "\n"
+                    + calculateWpm(originalPhrase, errsMap.get("TER"), time.get(getSize() - 1));
         } else {
             return "errsMap null";
         }
 
+    }
+
+    private String calculateWpm(String phrase, double TER, int time) {
+        double WPM = (phrase.length() / 5.0) / ((double) time / 60000.0);
+        double accuracy = (100 - TER) / 100.0;
+        double AWPM = WPM * accuracy;
+
+        return "WPM: " + String.format("%.2f", WPM) + "\n"
+                + "AWPM: " + String.format("%.2f", AWPM);
     }
 
     public void setOrientation (String orientation) {
@@ -182,28 +201,32 @@ public class Session implements Parcelable {
     }
 
     public void nextPhrase() {
-        transcribed.add(new Pair<>("", ""));
+        HashMap<String, String> map = new HashMap<>();
+        map.put("RAW", "");
+        map.put("FINAL", "");
+        map.put("ORIGINAL", "");
+        transcribed.add(map);
     }
 
-    public boolean transcribe(String newInput) {
+    public boolean transcribe(String newInput, String truePhrase) {
         int index = getSize();
-        StringBuilder sb = new StringBuilder(transcribed.get(index).first);
+        StringBuilder sb = new StringBuilder(transcribed.get(index).get("RAW"));
 
         //Check if enter is pressed to cycle to next phrase
         if(newInput.length() != 0 && newInput.charAt(newInput.length() - 1) == '\n') {
-            calculateErrors(newInput.substring(0, newInput.length() - 1));
+            calculateErrors(truePhrase);
             nextPhrase();
             timerStop();
             return false;
         }
 
         //First letter, timer start
-        if(transcribed.get(index).first.length() == 0) {
+        if(transcribed.get(index).get("RAW").length() == 0) {
             timerStart();
         }
 
 
-        if (transcribed.get(index).second.length() > newInput.length()) {
+        if (transcribed.get(index).get("FINAL").length() > newInput.length()) {
             sb.append("<");
         } else if (sb.length() == 0) {
             /*This is here because for some reason onTextChanged is triggered
@@ -213,14 +236,18 @@ public class Session implements Parcelable {
             sb.append(newInput.charAt(newInput.length() - 1));
         }
 
-        transcribed.set(index, new Pair<>(sb.toString(), newInput));
+        //transcribed.set(index, new Pair<>(sb.toString(), newInput));
+        HashMap<String, String> newMap = new HashMap<>();
+        newMap.put("RAW", sb.toString());
+        newMap.put("FINAL", newInput);
+        transcribed.set(index, newMap);
 
-        Log.d("TRANSCRIBE", "RAW: " + transcribed.get(index).first + " || TRANSCRIBED: " + transcribed.get(index).second);
+        Log.d("TRANSCRIBE", "RAW: " + transcribed.get(index).get("RAW") + " || TRANSCRIBED: " + transcribed.get(index).get("FINAL"));
         return true;
     }
 
     private void calculateErrors(String truePhrase) {
-        String transcribed = this.transcribed.get(getSize()).second;
+        String transcribed = this.transcribed.get(getSize()).get("FINAL");
 
         Log.d("ERRORS", truePhrase);
 
