@@ -12,6 +12,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
@@ -25,7 +26,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -40,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private MaterialButton generateBtn;
     private ArrayList<String> phrases;
     private int phraseIndex;
+    private FirebaseStorage storage;
+    private StorageReference storageReference;
     private EditText phraseInput;
     private TextView timeTV, userTV, phraseCountTV, testKeyboardTV, handlingTV, nativeKeyboardTV, phraseResultTV;
 
@@ -53,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
         Toolbar myToolbar = findViewById(R.id.myToolbar);
         setSupportActionBar(myToolbar);
         myToolbar.showOverflowMenu();
+
+        //storage = FirebaseStorage.getInstance();
+        //storageReference = storage.getReference();
 
         generateBtn = findViewById(R.id.phraseGenerateBtn);
         userTV = findViewById(R.id.userTV);
@@ -277,4 +288,21 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Result code not 49" + " " + result.getResultCode(), Toast.LENGTH_SHORT).show();
         }
     });
+
+    private void sendFile(String fileName, Uri filePath){
+        StorageReference ref = storageReference.child("logFiles/" + fileName);
+
+        ref.putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Toast.makeText(MainActivity.this, "Image uploaded!", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(MainActivity.this, "Upload failed!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
 }
