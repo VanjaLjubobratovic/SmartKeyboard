@@ -1,3 +1,45 @@
 <resources>
     <string name="app_name">SmartKeyboard</string>
+    <string name="session_settings">Session settings</string>
+    <string name="logging_settings">Logging Settings</string>
+    <string name="phrase_to_input">Phrase to input</string>
+    <string name="generate_phrase">New session not yet started</string>
+    <string name="session_info">Session info</string>
+    <string name="time">Time: </string>
+    <string name="phrase_count">Phrase count: </string>
+    <string name="user">User: </string>
+    <string name="tested_keyboard">Tested keyboard: </string>
+    <string name="handling">Handling: </string>
+    <string name="native_keyboard">Native keyboard: </string>
+    <string name="current_phrase_info">Current phrase info: </string>
+    <string name="type_phrase_here">Type phrase here</string>
+    <string name="fresh_session">Fresh session</string>
+    <string name="title_activity_session_settings">SessionSettingsActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="username">Username</string>
+    <string name="session_name">Session name</string>
+    <string name="keyboard">Keyboard</string>
+    <string name="number_of_phrases">Number of phrases</string>
+    <string name="interaction_style">Interaction style</string>
+    <string name="one_hand">One hand</string>
+    <string name="two_thumbs">Two thumbs</string>
+    <string name="cradle">Cradle</string>
+    <string name="orientation">Orientation</string>
+    <string name="portrait">Portrait</string>
+    <string name="landscape">Landscape</string>
+    <string name="default_phrases_num">40</string>
+    <string name="username_default">username</string>
+    <string name="session1">session1</string>
+    <string name="default_keyboard">default</string>
+    <string name="OK">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="init_title">Initialize new session</string>
+    <string name="init_message">Are you sure you want to initialize a new session? Current session data will be lost.</string>
 </resources>

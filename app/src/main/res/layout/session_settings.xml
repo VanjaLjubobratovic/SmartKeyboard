@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:paddingStart="12dp"
+    android:paddingTop="10dp"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/labelUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/username"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/txtUsername"
+        android:text="@string/username_default"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:textSize="@dimen/session_settings_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/labelUsername" />
+
+    <TextView
+        android:id="@+id/labelSessionName"
+        android:layout_marginTop="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/session_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtUsername" />
+
+    <EditText
+        android:id="@+id/txtSessionName"
+        android:layout_width="wrap_content"
+        android:text="@string/session1"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:textSize="@dimen/session_settings_size"
+        android:inputType="textPersonName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/labelSessionName" />
+
+    <TextView
+        android:id="@+id/labelKeyboard"
+        android:layout_marginTop="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/keyboard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtSessionName" />
+
+    <EditText
+        android:id="@+id/txtKeyboard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:text="@string/default_keyboard"
+        android:textSize="@dimen/session_settings_size"
+        android:inputType="textPersonName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/labelKeyboard" />
+
+    <TextView
+        android:id="@+id/labelNumberOfPhrases"
+        android:layout_marginTop="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/number_of_phrases"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtKeyboard" />
+
+    <EditText
+        android:id="@+id/txtNumberOfPhrases"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="number"
+        android:text="@string/default_phrases_num"
+        android:textSize="@dimen/session_settings_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/labelNumberOfPhrases" />
+
+    <TextView
+        android:id="@+id/labelInteractionStyle"
+        android:layout_marginTop="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/interaction_style"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtNumberOfPhrases" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupInteraction"
+        android:layout_marginTop="10dp"
+        android:padding="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/labelInteractionStyle">
+
+        <RadioButton
+            android:id="@+id/radioOneHand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/one_hand" />
+
+        <RadioButton
+            android:id="@+id/radioTwoThumbs"
+            android:layout_width="match_parent"
+            android:layout_marginLeft="5dp"
+            android:layout_height="wrap_content"
+            android:text="@string/two_thumbs"
+            android:checked="true"/>
+
+        <RadioButton
+            android:id="@+id/radioCradle"
+            android:layout_width="match_parent"
+            android:layout_marginLeft="5dp"
+            android:layout_height="wrap_content"
+            android:text="@string/cradle" />
+    </RadioGroup>
+
+    <TextView
+        android:layout_marginTop="10dp"
+        android:id="@+id/labelOrientation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/orientation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/radioGroupInteraction" />
+
+    <RadioGroup
+        android:layout_marginTop="10dp"
+        android:padding="5dp"
+        android:id="@+id/radioGroupOrientation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/labelOrientation">
+
+        <RadioButton
+            android:id="@+id/radioPortrait"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/portrait"
+            android:checked="true"/>
+
+        <RadioButton
+            android:id="@+id/radioLandscape"
+            android:layout_marginLeft="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/landscape" />
+    </RadioGroup>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
