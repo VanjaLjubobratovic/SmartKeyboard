@@ -136,7 +136,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.logSettings:
                 //TODO: Add some sort of dialog
                 if (session.isDone()) {
-                    KeyboardLogger.uploadLog(getApplicationContext(), session, storageReference);
+                    KeyboardLogger.uploadLog(getApplicationContext(), session, storageReference, this);
+                }
+                else{
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setMessage("You need to finish all phrases in the session to upload log files")
+                            .setCancelable(false).setPositiveButton("OK", null);
+                    AlertDialog alert = builder.create();
+                    alert.show();
                 }
                 Log.d(TAG, "onOptionsItemSelected: LOG SETTINGS");
                 return true;
