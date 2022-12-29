@@ -195,6 +195,11 @@ public class MainActivity extends AppCompatActivity {
                 + "Raw input: " + session.getTranscribed().get(session.getSize() - 1).get("RAW") + "\n"
                 + session.getStatsString(-1, generateBtn.getText().toString());
 
+        //This has to be called after session.getStatsString because
+        //WPM calculation is done by calling that function
+        //TODO: Fix that
+        KeyboardLogger.writeToCSV(getApplicationContext(), session);
+
         phraseResultTV.setText(currentInfo);
 
         generateBtn.setText(phrases.get(session.getSize()));
@@ -206,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Check if done
         if (session.getSize() == session.getNumOfPhrases()) {
+            KeyboardLogger.readTest(getApplicationContext(), session);
             phraseInput.setEnabled(false);
             generateBtn.setText("New session not yet started");
             Toast.makeText(this, "You have successfully finished with this session!", Toast.LENGTH_LONG).show();

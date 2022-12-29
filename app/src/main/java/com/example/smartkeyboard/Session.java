@@ -59,6 +59,10 @@ public class Session implements Parcelable {
         }
     };
 
+    public ArrayList<HashMap<String, Double>> getErrors() {
+        return errors;
+    }
+
     public int getNumOfPhrases() {
         return numOfPhrases;
     }
@@ -149,6 +153,9 @@ public class Session implements Parcelable {
         double WPM = (phrase.length() / 5.0) / ((double) time / 60000.0);
         double accuracy = (100 - TER) / 100.0;
         double AWPM = WPM * accuracy;
+
+        errors.get(errors.size() - 1).put("WPM", WPM);
+        errors.get(errors.size() - 1).put("AWPM", AWPM);
 
         return "WPM: " + String.format("%.2f", WPM) + "\n"
                 + "AWPM: " + String.format("%.2f", AWPM);
