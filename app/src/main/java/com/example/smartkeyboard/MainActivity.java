@@ -284,9 +284,12 @@ public class MainActivity extends AppCompatActivity {
         if(result.getResultCode() == 49) {
             Intent intent = result.getData();
             if (intent != null) {
-                session = intent.getParcelableExtra("sessionDetails");
-                Log.d("ACTIVITY_RESULT", session.getSessionID());
-                initTestSession();
+                boolean changed = intent.getBooleanExtra("somethingChanged", false);
+                if(changed) {
+                    session = intent.getParcelableExtra("sessionDetails");
+                    Log.d("ACTIVITY_RESULT", session.getSessionID());
+                    initTestSession();
+                }
             } else {
                 Toast.makeText(this, "Intent null", Toast.LENGTH_SHORT).show();
             }
