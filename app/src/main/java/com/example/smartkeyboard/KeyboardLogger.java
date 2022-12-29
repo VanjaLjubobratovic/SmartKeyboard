@@ -25,11 +25,11 @@ public abstract class KeyboardLogger {
             @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy@HH:mm:ss");
             String timestamp = df.format(new Date());
 
-            HashMap<String, Double> err = session.getErrors().get(session.getSize() - 1);
+            HashMap<String, Double> stat = session.getStats().get(session.getSize() - 1);
 
             output = timestamp + "-" + session.getUser() + "-" + session.getSessionID() + "||time-"
-                    + session.getTime().replace(" ", "") + ";TER-" + String.format("%.2f", err.get("TER"))
-                    + ";WPM-" + String.format("%.2f", err.get("WPM")) + ";AWPM-" + String.format("%.2f", err.get("AWPM")) + "\n";
+                    + session.getTime().replace(" ", "") + ";TER-" + String.format("%.2f", stat.get("TER"))
+                    + ";WPM-" + String.format("%.2f", stat.get("WPM")) + ";AWPM-" + String.format("%.2f", stat.get("AWPM")) + "\n";
 
             BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
             bw.write(output);
