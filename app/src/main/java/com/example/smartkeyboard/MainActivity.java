@@ -84,7 +84,9 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "New session not started", Toast.LENGTH_SHORT).show();
                     phraseInput.getText().clear();
                 } else {
+                    //New line detected, input finished
                     if(!session.transcribe(charSequence.toString(), generateBtn.getText().toString())) {
+                        KeyboardLogger.writeToCSV(getApplicationContext(), session);
                         phraseInput.getText().clear();
                         nextPhrase();
                     }
@@ -194,11 +196,6 @@ public class MainActivity extends AppCompatActivity {
                 + "Transcribed: " + session.getTranscribed().get(session.getSize() - 1).get("FINAL") + "\n"
                 + "Raw input: " + session.getTranscribed().get(session.getSize() - 1).get("RAW") + "\n"
                 + session.getStatsString(-1, generateBtn.getText().toString());
-
-        //This has to be called after session.getStatsString because
-        //WPM calculation is done by calling that function
-        //TODO: Fix that
-        KeyboardLogger.writeToCSV(getApplicationContext(), session);
 
         phraseResultTV.setText(currentInfo);
 

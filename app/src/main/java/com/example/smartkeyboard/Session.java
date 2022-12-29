@@ -71,14 +71,6 @@ public class Session implements Parcelable {
         this.numOfPhrases = numOfPhrases;
     }
 
-   /* public ArrayList<Pair<String, String>> getTranscribed() {
-        return transcribed;
-    }
-
-    public void setTranscribed(ArrayList<Pair<String, String>> transcribed) {
-        this.transcribed = transcribed;
-    }*/
-
     public ArrayList<HashMap<String, String>> getTranscribed() {
         return transcribed;
     }
@@ -142,23 +134,12 @@ public class Session implements Parcelable {
         if(errsMap != null) {
             return "TER: " + String.format("%.2f", errsMap.get("TER")) + "\n"
                     +  "NCER: " + String.format("%.2f", errsMap.get("NCER")) + "\n"
-                    + calculateWpm(originalPhrase, errsMap.get("TER"), time.get(getSize() - 1));
+                    + "WPM: " + String.format("%.2f", errsMap.get("WPM")) + "\n"
+                    + "AWPM: " + String.format("%.2f", errsMap.get("AWPM"));
         } else {
             return "errsMap null";
         }
 
-    }
-
-    private String calculateWpm(String phrase, double TER, int time) {
-        double WPM = (phrase.length() / 5.0) / ((double) time / 60000.0);
-        double accuracy = (100 - TER) / 100.0;
-        double AWPM = WPM * accuracy;
-
-        errors.get(errors.size() - 1).put("WPM", WPM);
-        errors.get(errors.size() - 1).put("AWPM", AWPM);
-
-        return "WPM: " + String.format("%.2f", WPM) + "\n"
-                + "AWPM: " + String.format("%.2f", AWPM);
     }
 
     public void setOrientation (String orientation) {
@@ -221,9 +202,9 @@ public class Session implements Parcelable {
 
         //Check if enter is pressed to cycle to next phrase
         if(newInput.length() != 0 && newInput.charAt(newInput.length() - 1) == '\n') {
+            timerStop();
             calculateErrors(truePhrase);
             nextPhrase();
-            timerStop();
             return false;
         }
 
@@ -295,8 +276,18 @@ public class Session implements Parcelable {
         HashMap<String, Double> err = new HashMap<>();
         err.put("NCER", NCER);
         err.put("TER", TER);
-
         errors.add(err);
+
+        calculateWpm(truePhrase, TER, time.get(time.size() - 1));
+    }
+
+    private void calculateWpm(String phrase, double TER, int time) {
+        double WPM = (phrase.length() / 5.0) / ((double) time / 60000.0);
+        double accuracy = (100 - TER) / 100.0;
+        double AWPM = WPM * accuracy;
+
+        errors.get(errors.size() - 1).put("WPM", WPM);
+        errors.get(errors.size() - 1).put("AWPM", AWPM);
     }
 
     public void clearData() {
