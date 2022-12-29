@@ -320,6 +320,10 @@ public class Session implements Parcelable {
         }
     }
 
+    public boolean isDone() {
+        return this.numOfPhrases == this.getSize();
+    }
+
     @Override
     public int describeContents() {
         return 0;

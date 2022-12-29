@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "879161906750",
+    "project_id": "smartkeyboard-6f3e8",
+    "storage_bucket": "smartkeyboard-6f3e8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879161906750:android:d76a7b1a370b471306236f",
+        "android_client_info": {
+          "package_name": "com.example.smartkeyboard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "879161906750-lugmk4675l10bvd1nan3a7eq7hsjejb1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFG2QwEWYDNWJcV_Y4TFYpJzGAiU7BE4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "879161906750-lugmk4675l10bvd1nan3a7eq7hsjejb1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

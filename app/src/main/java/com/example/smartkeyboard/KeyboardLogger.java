@@ -2,7 +2,17 @@ package com.example.smartkeyboard;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -39,6 +49,17 @@ public abstract class KeyboardLogger {
             Log.d("FILE WRITER", "writeToCSV: IOException");
             e.printStackTrace();
         }
+    }
+
+    public static void uploadLog(Context context, Session session, StorageReference storageReference){
+        String fileName = session.getSessionID() + "-" + session.getUser() + ".txt";
+        Uri filePath = Uri.fromFile(new File(context.getFilesDir(), fileName));
+
+        StorageReference ref = storageReference.child("logFiles/" + fileName);
+
+        ref.putFile(filePath)
+                .addOnSuccessListener(taskSnapshot -> Toast.makeText(context, "Log successfully uploaded!", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(context, "Log upload failed!", Toast.LENGTH_SHORT).show());
     }
 
     public static void readTest(Context context, Session session) {

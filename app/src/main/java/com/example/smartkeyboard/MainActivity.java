@@ -46,10 +46,10 @@ public class MainActivity extends AppCompatActivity {
     private MaterialButton generateBtn;
     private ArrayList<String> phrases;
     private int phraseIndex;
-    private FirebaseStorage storage;
-    private StorageReference storageReference;
     private EditText phraseInput;
     private TextView timeTV, userTV, phraseCountTV, testKeyboardTV, handlingTV, nativeKeyboardTV, phraseResultTV;
+    private FirebaseStorage storage;
+    private StorageReference storageReference;
 
     private Session session;
 
@@ -62,8 +62,8 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(myToolbar);
         myToolbar.showOverflowMenu();
 
-        //storage = FirebaseStorage.getInstance();
-        //storageReference = storage.getReference();
+        storage = FirebaseStorage.getInstance();
+        storageReference = storage.getReference();
 
         generateBtn = findViewById(R.id.phraseGenerateBtn);
         userTV = findViewById(R.id.userTV);
@@ -134,7 +134,10 @@ public class MainActivity extends AppCompatActivity {
 
         switch (item.getItemId()){
             case R.id.logSettings:
-                //TODO: Open logging settings
+                //TODO: Add some sort of dialog
+                if (session.isDone()) {
+                    KeyboardLogger.uploadLog(getApplicationContext(), session, storageReference);
+                }
                 Log.d(TAG, "onOptionsItemSelected: LOG SETTINGS");
                 return true;
 
@@ -218,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
         //Check if done
-        if (session.getSize() == session.getNumOfPhrases()) {
+        if (session.isDone()) {
             KeyboardLogger.readTest(getApplicationContext(), session);
             phraseInput.setEnabled(false);
             generateBtn.setText("New session not yet started");
@@ -291,21 +294,4 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Result code not 49" + " " + result.getResultCode(), Toast.LENGTH_SHORT).show();
         }
     });
-
-    private void sendFile(String fileName, Uri filePath){
-        StorageReference ref = storageReference.child("logFiles/" + fileName);
-
-        ref.putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Toast.makeText(MainActivity.this, "Image uploaded!", Toast.LENGTH_SHORT).show();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(MainActivity.this, "Upload failed!", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-    }
 }
