@@ -12,6 +12,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
@@ -25,7 +26,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -42,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
     private int phraseIndex;
     private EditText phraseInput;
     private TextView timeTV, userTV, phraseCountTV, testKeyboardTV, handlingTV, nativeKeyboardTV, phraseResultTV;
+    private FirebaseStorage storage;
+    private StorageReference storageReference;
 
     private Session session;
 
@@ -53,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
         Toolbar myToolbar = findViewById(R.id.myToolbar);
         setSupportActionBar(myToolbar);
         myToolbar.showOverflowMenu();
+
+        storage = FirebaseStorage.getInstance();
+        storageReference = storage.getReference();
 
         generateBtn = findViewById(R.id.phraseGenerateBtn);
         userTV = findViewById(R.id.userTV);
@@ -84,7 +95,9 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "New session not started", Toast.LENGTH_SHORT).show();
                     phraseInput.getText().clear();
                 } else {
+                    //New line detected, input finished
                     if(!session.transcribe(charSequence.toString(), generateBtn.getText().toString())) {
+                        KeyboardLogger.writeToCSV(getApplicationContext(), session);
                         phraseInput.getText().clear();
                         nextPhrase();
                     }
@@ -121,7 +134,17 @@ public class MainActivity extends AppCompatActivity {
 
         switch (item.getItemId()){
             case R.id.logSettings:
-                //TODO: Open logging settings
+                //TODO: Add some sort of dialog
+                if (session.isDone()) {
+                    KeyboardLogger.uploadLog(getApplicationContext(), session, storageReference, this);
+                }
+                else{
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setMessage("You need to finish all phrases in the session to upload log files")
+                            .setCancelable(false).setPositiveButton("OK", null);
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                }
                 Log.d(TAG, "onOptionsItemSelected: LOG SETTINGS");
                 return true;
 
@@ -193,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
                 + "Phrase given: " + generateBtn.getText() + "\n"
                 + "Transcribed: " + session.getTranscribed().get(session.getSize() - 1).get("FINAL") + "\n"
                 + "Raw input: " + session.getTranscribed().get(session.getSize() - 1).get("RAW") + "\n"
-                + session.getStatsString(-1, generateBtn.getText().toString());
+                + session.getStatsString(-1);
 
         phraseResultTV.setText(currentInfo);
 
@@ -205,7 +228,8 @@ public class MainActivity extends AppCompatActivity {
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
         //Check if done
-        if (session.getSize() == session.getNumOfPhrases()) {
+        if (session.isDone()) {
+            KeyboardLogger.readTest(getApplicationContext(), session);
             phraseInput.setEnabled(false);
             generateBtn.setText("New session not yet started");
             Toast.makeText(this, "You have successfully finished with this session!", Toast.LENGTH_LONG).show();
@@ -267,9 +291,12 @@ public class MainActivity extends AppCompatActivity {
         if(result.getResultCode() == 49) {
             Intent intent = result.getData();
             if (intent != null) {
-                session = intent.getParcelableExtra("sessionDetails");
-                Log.d("ACTIVITY_RESULT", session.getSessionID());
-                initTestSession();
+                boolean changed = intent.getBooleanExtra("somethingChanged", false);
+                if(changed) {
+                    session = intent.getParcelableExtra("sessionDetails");
+                    Log.d("ACTIVITY_RESULT", session.getSessionID());
+                    initTestSession();
+                }
             } else {
                 Toast.makeText(this, "Intent null", Toast.LENGTH_SHORT).show();
             }

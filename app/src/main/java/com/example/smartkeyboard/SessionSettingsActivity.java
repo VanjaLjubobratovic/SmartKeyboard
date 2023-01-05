@@ -1,6 +1,8 @@
 package com.example.smartkeyboard;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -21,6 +23,7 @@ public class SessionSettingsActivity extends AppCompatActivity {
     private TypingMode interaction;
     private Orientation orientation;
 
+    private boolean somethingChanged = false;
     private String usernamePref, sessionPref, keyboardPref, phraseNumberPref, orientationPref, interactionPref;
 
     @Override
@@ -140,29 +143,64 @@ public class SessionSettingsActivity extends AppCompatActivity {
             numberOfPhrases = "40";
         }
 
-        //Sending back to MainActivity
-        session.setUser(usernameString);
-        session.setSessionID(sessionNameString);
-        session.setTestedKeyboard(keyboardString);
-        session.setNumOfPhrases(Integer.parseInt(numberOfPhrases));
-        session.setOrientation(orientation);
-        session.setTypingMode(interaction);
-        intent.putExtra("sessionDetails", session);
-        setResult(49, intent);
+        if(usernameString.equals(usernamePref) && sessionNameString.equals(sessionPref) && keyboardString.equals(keyboardPref) && numberOfPhrases.equals(phraseNumberPref)
+        && orientation.toString().equals(orientationPref) && interaction.toString().equals(interactionPref)){
+            somethingChanged = false;
+        }
+        else{
+            somethingChanged = true;
+        }
+
+        if(somethingChanged){
+            String finalUsernameString = usernameString;
+            String finalSessionNameString = sessionNameString;
+            String finalKeyboardString = keyboardString;
+            String finalNumberOfPhrases = numberOfPhrases;
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Do you wish to save the changes").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                    //Sending to Main Activity
+                    session.setUser(finalUsernameString);
+                    session.setSessionID(finalSessionNameString);
+                    session.setTestedKeyboard(finalKeyboardString);
+                    session.setNumOfPhrases(Integer.parseInt(finalNumberOfPhrases));
+                    session.setOrientation(orientation);
+                    session.setTypingMode(interaction);
+                    intent.putExtra("sessionDetails", session);
+
+                    //Saving to SP
+                    SharedPreferences sharedPref = getSharedPreferences("sessionSettings", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor myEdit = sharedPref.edit();
+
+                    myEdit.putString("username", finalUsernameString);
+                    myEdit.putString("session_name", finalSessionNameString);
+                    myEdit.putString("keyboard", finalKeyboardString);
+                    myEdit.putString("number_of_phrases", finalNumberOfPhrases);
+                    myEdit.putString("interaction", interaction.toString());
+                    myEdit.putString("orientation", orientation.toString());
+                    myEdit.commit();
 
 
-        //Saving to SP
-        SharedPreferences sharedPref = getSharedPreferences("sessionSettings", Context.MODE_PRIVATE);
-        SharedPreferences.Editor myEdit = sharedPref.edit();
-
-        myEdit.putString("username", usernameString);
-        myEdit.putString("session_name", sessionNameString);
-        myEdit.putString("keyboard", keyboardString);
-        myEdit.putString("number_of_phrases", numberOfPhrases);
-        myEdit.putString("interaction", interaction.toString());
-        myEdit.putString("orientation", orientation.toString());
-        myEdit.commit();
-
-        super.onBackPressed();
+                    //TODO malo uljepsat ovo
+                    intent.putExtra("somethingChanged", somethingChanged);
+                    setResult(49, intent);
+                    finish();
+                }
+            })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            somethingChanged = false;
+                            intent.putExtra("somethingChanged", somethingChanged);
+                            setResult(49, intent);
+                            finish();
+                        }
+                    }).setCancelable(false);
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
     }
 }

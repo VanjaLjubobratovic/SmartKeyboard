@@ -4,7 +4,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.Log;
-import android.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,14 +15,15 @@ public class Session implements Parcelable {
     private Orientation orientation;
     private TypingMode typingMode;
 
-    //Pair<RawTranscription, FinalTranscription>
-    //private ArrayList<Pair<String, String>> transcribed;
-
     private ArrayList<HashMap<String, String>> transcribed;
     private ArrayList<Integer> time;
-
-    //Array of key value pairs which will contain errors
-    private ArrayList<HashMap<String, Double>> errors;
+    /* Array of key value pairs which will contain all stats
+       TER -> Total error rate
+       NCER -> Non-corrected errors
+       WPM -> words per minute
+       AWPM -> adjusted WPM
+     */
+    private ArrayList<HashMap<String, Double>> stats;
 
     protected Session(Parcel in){
         user = in.readString();
@@ -59,6 +59,10 @@ public class Session implements Parcelable {
         }
     };
 
+    public ArrayList<HashMap<String, Double>> getStats() {
+        return stats;
+    }
+
     public int getNumOfPhrases() {
         return numOfPhrases;
     }
@@ -66,14 +70,6 @@ public class Session implements Parcelable {
     public void setNumOfPhrases(int numOfPhrases) {
         this.numOfPhrases = numOfPhrases;
     }
-
-   /* public ArrayList<Pair<String, String>> getTranscribed() {
-        return transcribed;
-    }
-
-    public void setTranscribed(ArrayList<Pair<String, String>> transcribed) {
-        this.transcribed = transcribed;
-    }*/
 
     public ArrayList<HashMap<String, String>> getTranscribed() {
         return transcribed;
@@ -122,15 +118,23 @@ public class Session implements Parcelable {
     public void setOrientation(Orientation orientation) {
         this.orientation = orientation;
     }
+
+    public TypingMode getTypingMode() {
+        return typingMode;
+    }
+
+    public void setTypingMode(TypingMode typingMode) {
+        this.typingMode = typingMode;
+    }
     
-    public String getStatsString(int ind, String originalPhrase) {
+    public String getStatsString(int ind) {
         HashMap<String, Double> errsMap;
 
         //Error calculation
         if (ind == -1) {
-            errsMap = this.errors.get(getSize() - 1);
-        } else if (ind > -1 && ind < this.errors.size()){
-            errsMap = this.errors.get(ind);
+            errsMap = this.stats.get(getSize() - 1);
+        } else if (ind > -1 && ind < this.stats.size()){
+            errsMap = this.stats.get(ind);
         } else {
             return "Invalid index";
         }
@@ -138,20 +142,12 @@ public class Session implements Parcelable {
         if(errsMap != null) {
             return "TER: " + String.format("%.2f", errsMap.get("TER")) + "\n"
                     +  "NCER: " + String.format("%.2f", errsMap.get("NCER")) + "\n"
-                    + calculateWpm(originalPhrase, errsMap.get("TER"), time.get(getSize() - 1));
+                    + "WPM: " + String.format("%.2f", errsMap.get("WPM")) + "\n"
+                    + "AWPM: " + String.format("%.2f", errsMap.get("AWPM"));
         } else {
             return "errsMap null";
         }
 
-    }
-
-    private String calculateWpm(String phrase, double TER, int time) {
-        double WPM = (phrase.length() / 5.0) / ((double) time / 60000.0);
-        double accuracy = (100 - TER) / 100.0;
-        double AWPM = WPM * accuracy;
-
-        return "WPM: " + String.format("%.2f", WPM) + "\n"
-                + "AWPM: " + String.format("%.2f", AWPM);
     }
 
     public void setOrientation (String orientation) {
@@ -163,14 +159,6 @@ public class Session implements Parcelable {
                 this.orientation = Orientation.LANDSCAPE;
                 break;
         }
-    }
-
-    public TypingMode getTypingMode() {
-        return typingMode;
-    }
-
-    public void setTypingMode(TypingMode typingMode) {
-        this.typingMode = typingMode;
     }
 
     public void setTypingMode (String typingMode) {
@@ -214,9 +202,9 @@ public class Session implements Parcelable {
 
         //Check if enter is pressed to cycle to next phrase
         if(newInput.length() != 0 && newInput.charAt(newInput.length() - 1) == '\n') {
+            timerStop();
             calculateErrors(truePhrase);
             nextPhrase();
-            timerStop();
             return false;
         }
 
@@ -288,14 +276,24 @@ public class Session implements Parcelable {
         HashMap<String, Double> err = new HashMap<>();
         err.put("NCER", NCER);
         err.put("TER", TER);
+        stats.add(err);
 
-        errors.add(err);
+        calculateWpm(transcribed, TER, time.get(time.size() - 1));
+    }
+
+    private void calculateWpm(String phrase, double TER, int time) {
+        double WPM = (phrase.length() / 5.0) / ((double) time / 60000.0);
+        double accuracy = (100 - TER) / 100.0;
+        double AWPM = WPM * accuracy;
+
+        stats.get(stats.size() - 1).put("WPM", WPM);
+        stats.get(stats.size() - 1).put("AWPM", AWPM);
     }
 
     public void clearData() {
         this.transcribed = new ArrayList<>();
         this.time = new ArrayList<>();
-        this.errors = new ArrayList<>();
+        this.stats = new ArrayList<>();
         this.nextPhrase();
     }
 
@@ -320,6 +318,10 @@ public class Session implements Parcelable {
             //TODO: this back to false after testing
             return true;
         }
+    }
+
+    public boolean isDone() {
+        return this.numOfPhrases == this.getSize();
     }
 
     @Override
