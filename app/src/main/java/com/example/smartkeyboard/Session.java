@@ -118,8 +118,16 @@ public class Session implements Parcelable {
     public void setOrientation(Orientation orientation) {
         this.orientation = orientation;
     }
+
+    public TypingMode getTypingMode() {
+        return typingMode;
+    }
+
+    public void setTypingMode(TypingMode typingMode) {
+        this.typingMode = typingMode;
+    }
     
-    public String getStatsString(int ind, String originalPhrase) {
+    public String getStatsString(int ind) {
         HashMap<String, Double> errsMap;
 
         //Error calculation
@@ -151,14 +159,6 @@ public class Session implements Parcelable {
                 this.orientation = Orientation.LANDSCAPE;
                 break;
         }
-    }
-
-    public TypingMode getTypingMode() {
-        return typingMode;
-    }
-
-    public void setTypingMode(TypingMode typingMode) {
-        this.typingMode = typingMode;
     }
 
     public void setTypingMode (String typingMode) {
@@ -278,7 +278,7 @@ public class Session implements Parcelable {
         err.put("TER", TER);
         stats.add(err);
 
-        calculateWpm(truePhrase, TER, time.get(time.size() - 1));
+        calculateWpm(transcribed, TER, time.get(time.size() - 1));
     }
 
     private void calculateWpm(String phrase, double TER, int time) {

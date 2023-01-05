@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
                 + "Phrase given: " + generateBtn.getText() + "\n"
                 + "Transcribed: " + session.getTranscribed().get(session.getSize() - 1).get("FINAL") + "\n"
                 + "Raw input: " + session.getTranscribed().get(session.getSize() - 1).get("RAW") + "\n"
-                + session.getStatsString(-1, generateBtn.getText().toString());
+                + session.getStatsString(-1);
 
         phraseResultTV.setText(currentInfo);
 
