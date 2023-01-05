@@ -136,7 +136,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.logSettings:
                 //TODO: Add some sort of dialog
                 if (session.isDone()) {
-                    KeyboardLogger.uploadLog(getApplicationContext(), session, storageReference);
+                    KeyboardLogger.uploadLog(getApplicationContext(), session, storageReference, this);
+                }
+                else{
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setMessage("You need to finish all phrases in the session to upload log files")
+                            .setCancelable(false).setPositiveButton("OK", null);
+                    AlertDialog alert = builder.create();
+                    alert.show();
                 }
                 Log.d(TAG, "onOptionsItemSelected: LOG SETTINGS");
                 return true;
@@ -284,9 +291,12 @@ public class MainActivity extends AppCompatActivity {
         if(result.getResultCode() == 49) {
             Intent intent = result.getData();
             if (intent != null) {
-                session = intent.getParcelableExtra("sessionDetails");
-                Log.d("ACTIVITY_RESULT", session.getSessionID());
-                initTestSession();
+                boolean changed = intent.getBooleanExtra("somethingChanged", false);
+                if(changed) {
+                    session = intent.getParcelableExtra("sessionDetails");
+                    Log.d("ACTIVITY_RESULT", session.getSessionID());
+                    initTestSession();
+                }
             } else {
                 Toast.makeText(this, "Intent null", Toast.LENGTH_SHORT).show();
             }

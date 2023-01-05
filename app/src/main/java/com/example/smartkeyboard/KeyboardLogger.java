@@ -1,6 +1,7 @@
 package com.example.smartkeyboard;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
@@ -11,6 +12,7 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -51,15 +53,44 @@ public abstract class KeyboardLogger {
         }
     }
 
-    public static void uploadLog(Context context, Session session, StorageReference storageReference){
-        String fileName = session.getSessionID() + "-" + session.getUser() + ".txt";
-        Uri filePath = Uri.fromFile(new File(context.getFilesDir(), fileName));
+    public static void uploadLog(Context context, Session session, StorageReference storageReference, Context mainAct){
 
-        StorageReference ref = storageReference.child("logFiles/" + fileName);
+        if(session.getSessionID().isEmpty() || session.getSessionID() == null){
+            session.setSessionID("defaultSession");
+        }
+        if(session.getUser().isEmpty() || session.getUser() == null){
+            session.setUser("defaultUser");
+        }
 
-        ref.putFile(filePath)
-                .addOnSuccessListener(taskSnapshot -> Toast.makeText(context, "Log successfully uploaded!", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> Toast.makeText(context, "Log upload failed!", Toast.LENGTH_SHORT).show());
+        try {
+            ProgressDialog progressDialog = new ProgressDialog(mainAct);
+            progressDialog.setTitle("Uploading...");
+            progressDialog.show();
+
+            String fileName = session.getSessionID() + "-" + session.getUser() + ".txt";
+            Uri filePath = Uri.fromFile(new File(context.getFilesDir(), fileName));
+
+            StorageReference ref = storageReference.child("logFiles/" + fileName);
+
+            ref.putFile(filePath)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(context, "Log successfully uploaded!", Toast.LENGTH_SHORT).show(); })
+                    .addOnFailureListener(
+                            e -> {progressDialog.dismiss();
+                                Toast.makeText(context, "Log upload failed!", Toast.LENGTH_SHORT).show(); })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                            double progress = (100.0 * snapshot.getBytesTransferred() / snapshot.getTotalByteCount());
+                            progressDialog.setMessage("Uploaded " + (int)progress + "%");
+                        }
+                    });
+        }
+        catch(Exception e){
+            //progressDialog.dismiss();
+            Toast.makeText(context, "Log upload failed! Reason: " + e, Toast.LENGTH_LONG).show();
+        }
     }
 
     public static void readTest(Context context, Session session) {
