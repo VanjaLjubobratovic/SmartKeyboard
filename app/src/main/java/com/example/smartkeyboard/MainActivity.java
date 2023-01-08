@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private StorageReference storageReference;
 
     private Session session;
+    private InputMethodManager imm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
 
         checkMemory();
         setSessionText();
-
 
         phraseInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -163,6 +164,9 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+
+
 
     public void initSessionConfirm() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
