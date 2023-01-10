@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private StorageReference storageReference;
 
     private Session session;
-    private InputMethodManager imm;
+    private SmartInputService servis = new SmartInputService();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

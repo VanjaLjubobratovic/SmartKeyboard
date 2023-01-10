@@ -47,6 +47,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                     } else {
                         inputConnection.commitText("", 1);
                     }
+                    break;
 
                 case Keyboard.KEYCODE_SHIFT:
                     caps = !caps;
@@ -92,4 +93,6 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     public void swipeUp() {
 
     }
+
+
 }
