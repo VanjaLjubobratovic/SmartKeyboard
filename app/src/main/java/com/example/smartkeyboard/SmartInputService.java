@@ -4,12 +4,18 @@ import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
+import android.util.Xml;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 import android.widget.Toast;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,14 +36,14 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
 
-        keyboardView.setOnTouchListener(new View.OnTouchListener() {
+        /*keyboardView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 Toast.makeText(SmartInputService.this, "pressX: " + motionEvent.getX() + "\n" +
                         "pressY: " + motionEvent.getY(), Toast.LENGTH_SHORT).show();
                 return false;
             }
-        });
+        });*/
         return keyboardView;
     }
 
@@ -58,14 +64,14 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         //Coordinates test
         Keyboard.Key pressedKey = findKey(primaryCode);
 
-        if (pressedKey != null) {
+        /*if (pressedKey != null) {
             int centerX = pressedKey.x + pressedKey.width / 2;
             int centerY = pressedKey.y + pressedKey.height / 2;
 
             Toast.makeText(this, "X: " + centerX + "\n"
                     + "Y: " + centerY + "\n"
                     + "Height: " + pressedKey.height, Toast.LENGTH_SHORT).show();
-        }
+        }*/
 
         if (inputConnection != null) {
             switch (primaryCode) {
@@ -106,6 +112,19 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
 
         for(Keyboard.Key k : keys) {
             if (k.codes[0] == code) {
+                int index = keys.indexOf(k);
+
+                k.width += 20;
+                k.x -= 10;
+
+                if(index != 0) {
+                    keys.get(index - 1).width -= 10;
+                }
+                if (index != keys.size() - 1) {
+                    keys.get(index + 1).width -= 10;
+                    keys.get(index + 1).x += 10;
+                }
+                keyboardView.invalidateAllKeys();
                 return k;
             }
         }
