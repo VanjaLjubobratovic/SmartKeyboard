@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Keyboard xmlns:android="http://schemas.android.com/apk/res/android"
+    android:keyWidth="30%p"
+    android:horizontalGap="40px"
+    android:verticalGap="30px"
+    android:keyHeight="100dp"
+    android:keyTextColor="@color/white">
+
+    <Row>
+        <Key android:codes="49" android:keyWidth="30%p" android:keyIcon="@drawable/ic_settings_back" />
+        <Key android:codes="50" android:keyWidth="40%p" android:keyIcon="@drawable/ic_start_calibration"/>
+        <Key android:codes="51" android:keyWidth="40%p" android:keyIcon="@drawable/ic_restart_calibration"/>
+    </Row>
+</Keyboard>

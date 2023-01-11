@@ -4,20 +4,12 @@ import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
-import android.util.Xml;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 import android.widget.Toast;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class SmartInputService extends InputMethodService implements KeyboardView.OnKeyboardActionListener {
@@ -35,7 +27,16 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         keyboard = new Keyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
-
+        keyboardView.setLongClickable(true);
+        keyboardView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Keyboard settings = new Keyboard(getApplicationContext(), R.xml.settings_keys);
+                keyboardView.setKeyboard(settings);
+                Toast.makeText(getApplicationContext(), "Setting keys opened", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
         /*keyboardView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -48,6 +49,14 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     }
 
     @Override
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+        Keyboard settings = new Keyboard(this, R.xml.settings_keys);
+        keyboardView.setKeyboard(settings);
+        Toast.makeText(this, "Setting keys opened", Toast.LENGTH_SHORT).show();
+        return super.onKeyLongPress(keyCode, event);
+    }
+
+    @Override
     public void onPress(int i) {
 
     }
@@ -56,6 +65,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     public void onRelease(int i) {
 
     }
+
 
     @Override
     public void onKey(int primaryCode, int[] keyCodes) {
@@ -86,19 +96,33 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                     break;
 
                 case Keyboard.KEYCODE_SHIFT:
+                    //Caps je trenutno settings button
+                    Keyboard settings = new Keyboard(this, R.xml.settings_keys);
+                    keyboardView.setKeyboard(settings);
+                    /*
                     caps = !caps;
                     keyboard.setShifted(caps);
-                    keyboardView.invalidateAllKeys();
+                    keyboardView.invalidateAllKeys();*/
                     break;
 
                 case Keyboard.KEYCODE_DONE:
                     inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
                     break;
-
                 default:
                     char code = (char) primaryCode;
                     if (Character.isLetter(code) && caps) {
                         code = Character.toUpperCase(code);
+                    }
+                    switch(code) {
+                        case 49:
+                            keyboardView.setKeyboard(keyboard);
+                            break;
+                        case 50:
+                            //TODO pokreni kalbraciju
+                            break;
+                        case 51:
+                            //TODO resetiraj kalibraciju
+                            break;
                     }
                     inputConnection.commitText(String.valueOf(code), 1);
             }
