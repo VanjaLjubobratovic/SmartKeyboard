@@ -5,8 +5,14 @@ import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class SmartInputService extends InputMethodService implements KeyboardView.OnKeyboardActionListener {
 
@@ -15,12 +21,23 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
 
     private boolean caps = false;
 
+    private ArrayList<KeyModel> keys;
+
     @Override
     public View onCreateInputView() {
         keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
         keyboard = new Keyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
+
+        keyboardView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                Toast.makeText(SmartInputService.this, "pressX: " + motionEvent.getX() + "\n" +
+                        "pressY: " + motionEvent.getY(), Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
         return keyboardView;
     }
 
@@ -37,6 +54,19 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     @Override
     public void onKey(int primaryCode, int[] keyCodes) {
         InputConnection inputConnection = getCurrentInputConnection();
+
+        //Coordinates test
+        Keyboard.Key pressedKey = findKey(primaryCode);
+
+        if (pressedKey != null) {
+            int centerX = pressedKey.x + pressedKey.width / 2;
+            int centerY = pressedKey.y + pressedKey.height / 2;
+
+            Toast.makeText(this, "X: " + centerX + "\n"
+                    + "Y: " + centerY + "\n"
+                    + "Height: " + pressedKey.height, Toast.LENGTH_SHORT).show();
+        }
+
         if (inputConnection != null) {
             switch (primaryCode) {
                 case Keyboard.KEYCODE_DELETE:
@@ -67,6 +97,19 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                     inputConnection.commitText(String.valueOf(code), 1);
             }
         }
+    }
+
+
+
+    private Keyboard.Key findKey(int code) {
+        List<Keyboard.Key> keys = this.keyboard.getKeys();
+
+        for(Keyboard.Key k : keys) {
+            if (k.codes[0] == code) {
+                return k;
+            }
+        }
+        return null;
     }
 
     @Override
