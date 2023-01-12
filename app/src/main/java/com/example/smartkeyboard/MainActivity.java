@@ -9,8 +9,10 @@ import androidx.appcompat.widget.Toolbar;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -53,7 +55,8 @@ public class MainActivity extends AppCompatActivity {
     private StorageReference storageReference;
 
     private Session session;
-    private SmartInputService servis = new SmartInputService();
+    private SmartInputService smartInputService = new SmartInputService();
+    private BroadcastReceiver touchReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +88,16 @@ public class MainActivity extends AppCompatActivity {
         checkMemory();
         setSessionText();
 
+        touchReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int x = intent.getIntExtra("x", 0);
+                int y = intent.getIntExtra("y", 0);
+                session.addTouchPoint(x, y);
+                Log.d("TOUCH_BROADCAST", "TOUCH RECEIVED!\nX: " + x + "\nY: " + y);
+            }
+        };
+
         phraseInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -109,6 +122,19 @@ public class MainActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        IntentFilter filter = new IntentFilter(SmartInputService.KEYBOARD_TOUCH);
+        registerReceiver(touchReceiver, filter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(touchReceiver);
     }
 
     private void checkMemory() {

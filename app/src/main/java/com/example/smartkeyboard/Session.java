@@ -1,5 +1,10 @@
 package com.example.smartkeyboard;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Point;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
@@ -24,6 +29,7 @@ public class Session implements Parcelable {
        AWPM -> adjusted WPM
      */
     private ArrayList<HashMap<String, Double>> stats;
+    private ArrayList<ArrayList<Point>> touchPoints;
 
     protected Session(Parcel in){
         user = in.readString();
@@ -194,6 +200,7 @@ public class Session implements Parcelable {
         map.put("FINAL", "");
         map.put("ORIGINAL", "");
         transcribed.add(map);
+        touchPoints.add(new ArrayList<>());
     }
 
     public boolean transcribe(String newInput, String truePhrase) {
@@ -290,10 +297,15 @@ public class Session implements Parcelable {
         stats.get(stats.size() - 1).put("AWPM", AWPM);
     }
 
+    public void addTouchPoint(int x, int y) {
+        touchPoints.get(touchPoints.size()-1).add(new Point(x, y));
+    }
+
     public void clearData() {
         this.transcribed = new ArrayList<>();
         this.time = new ArrayList<>();
         this.stats = new ArrayList<>();
+        this.touchPoints = new ArrayList<>();
         this.nextPhrase();
     }
 
