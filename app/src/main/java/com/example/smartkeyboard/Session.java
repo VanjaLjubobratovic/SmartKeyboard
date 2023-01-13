@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Point;
+import android.inputmethodservice.Keyboard;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
@@ -12,6 +13,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Session implements Parcelable {
     private String user, sessionID, testedKeyboard, nativeKeyboard;
@@ -30,6 +32,7 @@ public class Session implements Parcelable {
      */
     private ArrayList<HashMap<String, Double>> stats;
     private ArrayList<ArrayList<Point>> touchPoints;
+    private HashMap<String, MistakeModel> mistakes;
 
     protected Session(Parcel in){
         user = in.readString();
@@ -64,6 +67,10 @@ public class Session implements Parcelable {
             return new Session[size];
         }
     };
+
+    public ArrayList<ArrayList<Point>> getTouchPoints() {
+        return touchPoints;
+    }
 
     public ArrayList<HashMap<String, Double>> getStats() {
         return stats;
@@ -131,6 +138,10 @@ public class Session implements Parcelable {
 
     public void setTypingMode(TypingMode typingMode) {
         this.typingMode = typingMode;
+    }
+
+    public void putOriginalPhrase(String phrase) {
+        this.transcribed.get(getSize()).put("ORIGINAL", phrase);
     }
     
     public String getStatsString(int ind) {
@@ -210,6 +221,7 @@ public class Session implements Parcelable {
         //Check if enter is pressed to cycle to next phrase
         if(newInput.length() != 0 && newInput.charAt(newInput.length() - 1) == '\n') {
             timerStop();
+            calculateMistakes(truePhrase);
             calculateErrors(truePhrase);
             nextPhrase();
             return false;
@@ -288,6 +300,52 @@ public class Session implements Parcelable {
         calculateWpm(transcribed, TER, time.get(time.size() - 1));
     }
 
+    private void calculateMistakes(String original) {
+        String finalInput = this.transcribed.get(getSize()).get("FINAL");
+        int length = 0;
+        if(original.length() > finalInput.length()) {
+            length = finalInput.length();
+        } else {
+            length = original.length();
+        }
+
+        for(int i = 0; i < length; i++) {
+            assert finalInput != null;
+            if (original.toCharArray()[i] != finalInput.toCharArray()[i]) {
+                String key = original.substring(i,i+1);
+                if(original.charAt(i) == ' ') {
+                    key = "SPACE";
+                }
+
+                MistakeModel m = mistakes.get(key);
+
+                try {
+                    int missX = touchPoints.get(touchPoints.size() - 1).get(i).x - m.getCenterX();
+                    int missY = touchPoints.get(touchPoints.size() - 1).get(i).y - m.getCenterY();
+
+                    Log.d("MISTAKE", missX + " " + missY + " || " + m.getKey().width + " " + m.getKey().height);
+
+                    //If press is simply too far from correct letter we ignore such mistake
+                    if (Math.abs(missX) > m.getKey().width || Math.abs(missY) > m.getKey().height)
+                        continue;
+
+                    m.addMistakes(missX, missY);
+                } catch (Exception e) {
+                    Log.e("ERROR", "Key: " + key + " cannot be found in map");
+                    Log.e("ERROR", mistakes.keySet().toString());
+                }
+            }
+        }
+    }
+
+    public void fillKeyMap(Keyboard keyboard) {
+        List<Keyboard.Key> keyList = keyboard.getKeys();
+        for (Keyboard.Key k : keyList) {
+            mistakes.put(k.label.toString(), new MistakeModel(k));
+        }
+        logMistakes();
+    }
+
     private void calculateWpm(String phrase, double TER, int time) {
         double WPM = (phrase.length() / 5.0) / ((double) time / 60000.0);
         double accuracy = (100 - TER) / 100.0;
@@ -306,6 +364,7 @@ public class Session implements Parcelable {
         this.time = new ArrayList<>();
         this.stats = new ArrayList<>();
         this.touchPoints = new ArrayList<>();
+        this.mistakes = new HashMap<>();
         this.nextPhrase();
     }
 
@@ -316,6 +375,12 @@ public class Session implements Parcelable {
     public void timerStop() {
         long elapsedTime = (SystemClock.elapsedRealtime() - startTime);
         time.add((int) elapsedTime);
+    }
+
+    public void logMistakes() {
+        for(MistakeModel m : mistakes.values()) {
+            Log.d("MISTAKE", m.toString());
+        }
     }
 
     public boolean isSet() {
@@ -333,6 +398,13 @@ public class Session implements Parcelable {
     }
 
     public boolean isDone() {
+        if (this.numOfPhrases == this.getSize()) {
+            for(MistakeModel m : mistakes.values()) {
+                m.calculateAvgs();
+            }
+
+            logMistakes();
+        }
         return this.numOfPhrases == this.getSize();
     }
 

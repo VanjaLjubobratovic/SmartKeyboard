@@ -14,8 +14,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.inputmethodservice.InputMethodService;
+import android.inputmethodservice.Keyboard;
+import android.inputmethodservice.KeyboardView;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -55,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
     private StorageReference storageReference;
 
     private Session session;
-    private SmartInputService smartInputService = new SmartInputService();
     private BroadcastReceiver touchReceiver;
 
     @Override
@@ -94,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
                 int x = intent.getIntExtra("x", 0);
                 int y = intent.getIntExtra("y", 0);
                 session.addTouchPoint(x, y);
+
                 Log.d("TOUCH_BROADCAST", "TOUCH RECEIVED!\nX: " + x + "\nY: " + y);
             }
         };
@@ -112,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
                     //New line detected, input finished
                     if(!session.transcribe(charSequence.toString(), generateBtn.getText().toString())) {
                         KeyboardLogger.writeToCSV(getApplicationContext(), session);
+                        KeyboardLogger.writePointsToCSV(getApplicationContext(), session);
                         phraseInput.getText().clear();
                         nextPhrase();
                     }
@@ -275,8 +280,9 @@ public class MainActivity extends AppCompatActivity {
             phraseInput.setEnabled(true);
 
             session.clearData();
-
+            session.putOriginalPhrase(phrases.get(phraseIndex));
             setSessionText();
+            mapKeys();
 
             Toast.makeText(getApplicationContext(),"New session initialized", Toast.LENGTH_SHORT).show();
         } else {
@@ -306,6 +312,13 @@ public class MainActivity extends AppCompatActivity {
         nativeKeyboardTV.append(" " + session.getNativeKeyboard());
 
         phraseResultTV.setText("");
+    }
+
+    private void mapKeys() {
+        KeyboardView keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
+        Keyboard keyboard = new Keyboard(getApplicationContext(), R.xml.keys_layout);
+        keyboardView.setKeyboard(keyboard);
+        session.fillKeyMap(keyboard);
     }
 
 

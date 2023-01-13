@@ -54,6 +54,10 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         //Coordinates test
         Keyboard.Key pressedKey = findKey(primaryCode);
 
+        Log.d("PROPERTIES", "Xmax: " + keyboardView.getWidth() + "\n"
+                                + "Ymax: " + keyboardView.getHeight() + "\n");
+
+
 
         if (inputConnection != null) {
             switch (primaryCode) {
@@ -146,6 +150,10 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         sendBroadcast(intent);
         //LocalBroadcastManager.getInstance(SmartInputService.this).sendBroadcast(intent);
         Log.d("TOUCH_BROADCAST", "SENT!");
+    }
+
+    public Keyboard getKeyboard() {
+        return this.keyboard;
     }
 
     @Override
