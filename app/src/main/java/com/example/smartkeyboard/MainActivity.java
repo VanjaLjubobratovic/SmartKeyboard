@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
         setSessionText();
 
         //Testing for Voronoi
-        /*ArrayList<ArrayList<DoublePoint>> optimal = new ArrayList<ArrayList<DoublePoint>>();
+        ArrayList<ArrayList<DoublePoint>> optimal = new ArrayList<ArrayList<DoublePoint>>();
 
         for(int i = 0; i < 1; i ++){
             ArrayList<DoublePoint> row = new ArrayList<DoublePoint>();
@@ -99,9 +99,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Voronoi test = new Voronoi(optimal);
-        test.calcWidth();
-        optimal = test.getKeySizes();
-        Toast.makeText(this, String.valueOf(optimal.get(0).get(0).getX()), Toast.LENGTH_LONG).show();*/
+        ArrayList<ArrayList<DoublePoint>> newPoints = test.calcWidth();
+        Toast.makeText(this, String.valueOf(newPoints.get(0).get(7).getX()), Toast.LENGTH_LONG).show();
 
         phraseInput.addTextChangedListener(new TextWatcher() {
             @Override
