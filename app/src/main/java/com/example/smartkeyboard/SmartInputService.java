@@ -1,10 +1,13 @@
 package com.example.smartkeyboard;
 
+import android.content.Context;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 import android.widget.Toast;
@@ -28,23 +31,6 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
         keyboardView.setLongClickable(true);
-        keyboardView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                Keyboard settings = new Keyboard(getApplicationContext(), R.xml.settings_keys);
-                keyboardView.setKeyboard(settings);
-                Toast.makeText(getApplicationContext(), "Setting keys opened", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });
-        /*keyboardView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                Toast.makeText(SmartInputService.this, "pressX: " + motionEvent.getX() + "\n" +
-                        "pressY: " + motionEvent.getY(), Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });*/
         return keyboardView;
     }
 
@@ -96,13 +82,9 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                     break;
 
                 case Keyboard.KEYCODE_SHIFT:
-                    //Caps je trenutno settings button
-                    Keyboard settings = new Keyboard(this, R.xml.settings_keys);
-                    keyboardView.setKeyboard(settings);
-                    /*
                     caps = !caps;
                     keyboard.setShifted(caps);
-                    keyboardView.invalidateAllKeys();*/
+                    keyboardView.invalidateAllKeys();
                     break;
 
                 case Keyboard.KEYCODE_DONE:
@@ -124,7 +106,8 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                             //TODO resetiraj kalibraciju
                             break;
                     }
-                    inputConnection.commitText(String.valueOf(code), 1);
+                    if(code != 49 && code !=50 && code != 51)
+                        inputConnection.commitText(String.valueOf(code), 1);
             }
         }
     }
@@ -162,23 +145,28 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
 
     @Override
     public void swipeLeft() {
-
+        Keyboard settings = new Keyboard(this, R.xml.settings_keys);
+        keyboardView.setKeyboard(settings);
     }
 
     @Override
     public void swipeRight() {
-
+        Keyboard settings = new Keyboard(this, R.xml.settings_keys);
+        keyboardView.setKeyboard(settings);
     }
 
     @Override
     public void swipeDown() {
-
+        Keyboard settings = new Keyboard(this, R.xml.settings_keys);
+        keyboardView.setKeyboard(settings);
     }
 
     @Override
     public void swipeUp() {
-
+        Keyboard settings = new Keyboard(this, R.xml.settings_keys);
+        keyboardView.setKeyboard(settings);
     }
+
 
 
 }
