@@ -1,9 +1,5 @@
 package com.example.smartkeyboard;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Point;
 import android.inputmethodservice.Keyboard;
 import android.os.Parcel;
@@ -400,7 +396,8 @@ public class Session implements Parcelable {
     public boolean isDone() {
         if (this.numOfPhrases == this.getSize()) {
             for(MistakeModel m : mistakes.values()) {
-                m.calculateAvgs();
+                m.calculateAvgMistake();
+                m.calculateCentroid();
             }
 
             logMistakes();

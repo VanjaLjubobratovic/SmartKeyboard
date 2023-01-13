@@ -8,6 +8,7 @@ public class MistakeModel {
     private Keyboard.Key key;
     private Integer mistakeX, mistakeY;
     private Integer totalMistakes;
+    private Integer centroidX, centroidY;
 
     public MistakeModel(Keyboard.Key key, Integer mistakeX, Integer mistakeY) {
         this.key = key;
@@ -72,12 +73,18 @@ public class MistakeModel {
         this.totalMistakes++;
     }
 
-    public void calculateAvgs() {
+    public void calculateAvgMistake() {
         if (totalMistakes == 0)
             return;
 
         this.mistakeX /= totalMistakes;
         this.mistakeY /= totalMistakes;
+    }
+
+    public void calculateCentroid() {
+        //TODO: Not really a centroid yet
+        this.centroidX = this.getCenterX() + this.mistakeX;
+        this.centroidY = this.getCenterY() + this.mistakeY;
     }
 
     @NonNull

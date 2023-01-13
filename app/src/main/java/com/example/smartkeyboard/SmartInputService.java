@@ -24,8 +24,6 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
 
     private boolean caps = false;
 
-    private ArrayList<KeyModel> keys;
-
     @Override
     public View onCreateInputView() {
         keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
