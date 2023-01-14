@@ -35,7 +35,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     public static final String KEYBOARD_SETTINGS = "KeyboardSettings";
 
     private KeyboardView keyboardView;
-    private Keyboard keyboard;
+    private CustomKeyboard keyboard;
 
     private boolean caps = false;
     private BroadcastReceiver settingsReceiver;
@@ -43,7 +43,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     @Override
     public View onCreateInputView() {
         keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
-        keyboard = new Keyboard(this, R.xml.keys_layout);
+        keyboard = new CustomKeyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
         keyboardView.setOnTouchListener(this);
@@ -139,7 +139,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
 
 
     private void calibrateFromConfig() {
-        try {
+       /* try {
             File input = new File(getFilesDir().getAbsolutePath());
             BufferedReader bufferedReader = new BufferedReader(new FileReader(input + "/keyboardConfig.txt"));
 
@@ -153,7 +153,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                 System.out.println(line + " || " + x + " " + y);
 
                 this.keyboard.getKeys().get(i).width = x;
-                this.keyboard.getKeys().get(i).height = y;
+                this.keyboard.getKeys().get(i).height = y + 30;
                 i++;
                 line = bufferedReader.readLine();
             }
@@ -161,7 +161,13 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
             e.printStackTrace();
         }
 
+
         keyboardView.invalidateAllKeys();
+        keyboardView.invalidate();*/
+
+        keyboard.changeKeyHeight(2);
+        keyboardView.setKeyboard(keyboard);
+        keyboardView.closing();
     }
 
     private Keyboard.Key findKey(int code) {
