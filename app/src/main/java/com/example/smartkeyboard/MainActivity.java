@@ -91,6 +91,25 @@ public class MainActivity extends AppCompatActivity {
         checkMemory();
         setSessionText();
 
+
+        //Testing for Voronoi
+        //TODO: Remove after no longer neccesary
+        /*ArrayList<ArrayList<DoublePoint>> optimal = new ArrayList<ArrayList<DoublePoint>>();
+
+        for(int i = 0; i < 1; i ++){
+            ArrayList<DoublePoint> row = new ArrayList<DoublePoint>();
+            for(int j = 1; j < 16; j+=2){
+                DoublePoint point = new DoublePoint();
+                point.setX(j);
+                row.add(point);
+            }
+            optimal.add(row);
+        }
+
+        Voronoi test = new Voronoi(optimal);
+        ArrayList<ArrayList<DoublePoint>> newPoints = test.calcWidth();
+        Toast.makeText(this, String.valueOf(newPoints.get(0).get(7).getX()), Toast.LENGTH_LONG).show();*/
+
         touchReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -101,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("TOUCH_BROADCAST", "TOUCH RECEIVED!\nX: " + x + "\nY: " + y);
             }
         };
+
 
         phraseInput.addTextChangedListener(new TextWatcher() {
             @Override

@@ -1,18 +1,19 @@
 package com.example.smartkeyboard;
 
+
+import android.content.Context;
 import android.content.Intent;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
+import android.view.GestureDetector;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
-
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +32,15 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
         keyboardView.setOnTouchListener(this);
-
         return keyboardView;
+    }
+
+    @Override
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+        Keyboard settings = new Keyboard(this, R.xml.settings_keys);
+        keyboardView.setKeyboard(settings);
+        Toast.makeText(this, "Setting keys opened", Toast.LENGTH_SHORT).show();
+        return super.onKeyLongPress(keyCode, event);
     }
 
     @Override
@@ -44,6 +52,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     public void onRelease(int i) {
 
     }
+
 
     @Override
     public void onKey(int primaryCode, int[] keyCodes) {
@@ -78,13 +87,24 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                 case Keyboard.KEYCODE_DONE:
                     inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
                     break;
-
                 default:
                     char code = (char) primaryCode;
                     if (Character.isLetter(code) && caps) {
                         code = Character.toUpperCase(code);
                     }
-                    inputConnection.commitText(String.valueOf(code), 1);
+                    switch(code) {
+                        case 49:
+                            keyboardView.setKeyboard(keyboard);
+                            break;
+                        case 50:
+                            //TODO pokreni kalbraciju
+                            break;
+                        case 51:
+                            //TODO resetiraj kalibraciju
+                            break;
+                    }
+                    if(code != 49 && code !=50 && code != 51)
+                        inputConnection.commitText(String.valueOf(code), 1);
             }
         }
     }
@@ -122,23 +142,28 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
 
     @Override
     public void swipeLeft() {
-
+        Keyboard settings = new Keyboard(this, R.xml.settings_keys);
+        keyboardView.setKeyboard(settings);
     }
 
     @Override
     public void swipeRight() {
-
+        Keyboard settings = new Keyboard(this, R.xml.settings_keys);
+        keyboardView.setKeyboard(settings);
     }
 
     @Override
     public void swipeDown() {
-
+        Keyboard settings = new Keyboard(this, R.xml.settings_keys);
+        keyboardView.setKeyboard(settings);
     }
 
     @Override
     public void swipeUp() {
-
+        Keyboard settings = new Keyboard(this, R.xml.settings_keys);
+        keyboardView.setKeyboard(settings);
     }
+
 
 
     private void broadcastTouch(int x, int y) {
