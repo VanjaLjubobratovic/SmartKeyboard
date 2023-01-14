@@ -139,7 +139,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
 
 
     private void calibrateFromConfig() {
-       /* try {
+        try {
             File input = new File(getFilesDir().getAbsolutePath());
             BufferedReader bufferedReader = new BufferedReader(new FileReader(input + "/keyboardConfig.txt"));
 
@@ -151,9 +151,25 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                 int x = Math.abs(Integer.parseInt(coords[0]));
                 int y = Math.abs(Integer.parseInt(coords[1]));
                 System.out.println(line + " || " + x + " " + y);
+                Keyboard.Key k = this.keyboard.getKeys().get(i);
 
-                this.keyboard.getKeys().get(i).width = x;
-                this.keyboard.getKeys().get(i).height = y + 30;
+                k.width = x;
+                k.height = y;
+
+                int lookupIndex = 0;
+                if(i > 27) {
+                    lookupIndex = 27;
+                } else if(i > 18) {
+                    lookupIndex = 18;
+                } else if (i > 9) {
+                    lookupIndex = 9;
+                } else {
+                    i++;
+                    line = bufferedReader.readLine();
+                    continue;
+                }
+
+                k.y = keyboard.getKeys().get(lookupIndex).height + keyboard.getKeys().get(lookupIndex).y + 10;
                 i++;
                 line = bufferedReader.readLine();
             }
@@ -161,11 +177,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
             e.printStackTrace();
         }
 
-
-        keyboardView.invalidateAllKeys();
-        keyboardView.invalidate();*/
-
-        keyboard.changeKeyHeight(2);
+        keyboard.changeKeyHeight();
         keyboardView.setKeyboard(keyboard);
         keyboardView.closing();
     }

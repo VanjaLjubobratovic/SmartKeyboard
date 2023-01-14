@@ -4,8 +4,7 @@
     android:horizontalGap="3px"
     android:verticalGap="10px"
     android:keyHeight="50dp"
-    android:keyTextColor="@color/white"
-    android:maxHeight="650px">
+    android:keyTextColor="@color/white">
 
     <Row>
         <Key android:codes="113" android:keyLabel="q" android:keyEdgeFlags="left"/>
