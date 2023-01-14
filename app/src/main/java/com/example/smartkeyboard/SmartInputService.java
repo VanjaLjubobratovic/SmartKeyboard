@@ -1,28 +1,29 @@
 package com.example.smartkeyboard;
 
+
 import android.content.Context;
+import android.content.Intent;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
 import android.view.GestureDetector;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
-import android.widget.Toast;
-
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SmartInputService extends InputMethodService implements KeyboardView.OnKeyboardActionListener {
+public class SmartInputService extends InputMethodService implements KeyboardView.OnKeyboardActionListener, View.OnTouchListener {
+    public static final String KEYBOARD_TOUCH = "KeyboardTouched";
 
     private KeyboardView keyboardView;
     private Keyboard keyboard;
 
     private boolean caps = false;
-
-    private ArrayList<KeyModel> keys;
 
     @Override
     public View onCreateInputView() {
@@ -30,7 +31,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         keyboard = new Keyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
-        keyboardView.setLongClickable(true);
+        keyboardView.setOnTouchListener(this);
         return keyboardView;
     }
 
@@ -60,14 +61,10 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         //Coordinates test
         Keyboard.Key pressedKey = findKey(primaryCode);
 
-        /*if (pressedKey != null) {
-            int centerX = pressedKey.x + pressedKey.width / 2;
-            int centerY = pressedKey.y + pressedKey.height / 2;
+        Log.d("PROPERTIES", "Xmax: " + keyboardView.getWidth() + "\n"
+                                + "Ymax: " + keyboardView.getHeight() + "\n");
 
-            Toast.makeText(this, "X: " + centerX + "\n"
-                    + "Y: " + centerY + "\n"
-                    + "Height: " + pressedKey.height, Toast.LENGTH_SHORT).show();
-        }*/
+
 
         if (inputConnection != null) {
             switch (primaryCode) {
@@ -119,7 +116,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
 
         for(Keyboard.Key k : keys) {
             if (k.codes[0] == code) {
-                int index = keys.indexOf(k);
+                /*int index = keys.indexOf(k);
 
                 k.width += 20;
                 k.x -= 10;
@@ -131,7 +128,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                     keys.get(index + 1).width -= 10;
                     keys.get(index + 1).x += 10;
                 }
-                keyboardView.invalidateAllKeys();
+                keyboardView.invalidateAllKeys();*/
                 return k;
             }
         }
@@ -169,4 +166,27 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
 
 
 
+    private void broadcastTouch(int x, int y) {
+        Intent intent = new Intent(SmartInputService.KEYBOARD_TOUCH);
+        intent.putExtra("x", x);
+        intent.putExtra("y", y);
+        sendBroadcast(intent);
+        //LocalBroadcastManager.getInstance(SmartInputService.this).sendBroadcast(intent);
+        Log.d("TOUCH_BROADCAST", "SENT!");
+    }
+
+    public Keyboard getKeyboard() {
+        return this.keyboard;
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+            Log.d("TOUCH", "pressX: " + motionEvent.getX() + "\n" +
+                    "pressY: " + motionEvent.getY());
+
+            broadcastTouch((int) motionEvent.getX(), (int) motionEvent.getY());
+        }
+        return false;
+    }
 }

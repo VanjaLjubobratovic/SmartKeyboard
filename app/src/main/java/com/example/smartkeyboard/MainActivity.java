@@ -9,11 +9,17 @@ import androidx.appcompat.widget.Toolbar;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.inputmethodservice.InputMethodService;
+import android.inputmethodservice.Keyboard;
+import android.inputmethodservice.KeyboardView;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -53,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private StorageReference storageReference;
 
     private Session session;
-    private SmartInputService servis = new SmartInputService();
+    private BroadcastReceiver touchReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,8 +91,10 @@ public class MainActivity extends AppCompatActivity {
         checkMemory();
         setSessionText();
 
+
         //Testing for Voronoi
-        ArrayList<ArrayList<DoublePoint>> optimal = new ArrayList<ArrayList<DoublePoint>>();
+        //TODO: Remove after no longer neccesary
+        /*ArrayList<ArrayList<DoublePoint>> optimal = new ArrayList<ArrayList<DoublePoint>>();
 
         for(int i = 0; i < 1; i ++){
             ArrayList<DoublePoint> row = new ArrayList<DoublePoint>();
@@ -100,7 +108,19 @@ public class MainActivity extends AppCompatActivity {
 
         Voronoi test = new Voronoi(optimal);
         ArrayList<ArrayList<DoublePoint>> newPoints = test.calcWidth();
-        Toast.makeText(this, String.valueOf(newPoints.get(0).get(7).getX()), Toast.LENGTH_LONG).show();
+        Toast.makeText(this, String.valueOf(newPoints.get(0).get(7).getX()), Toast.LENGTH_LONG).show();*/
+
+        touchReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int x = intent.getIntExtra("x", 0);
+                int y = intent.getIntExtra("y", 0);
+                session.addTouchPoint(x, y);
+
+                Log.d("TOUCH_BROADCAST", "TOUCH RECEIVED!\nX: " + x + "\nY: " + y);
+            }
+        };
+
 
         phraseInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -116,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
                     //New line detected, input finished
                     if(!session.transcribe(charSequence.toString(), generateBtn.getText().toString())) {
                         KeyboardLogger.writeToCSV(getApplicationContext(), session);
+                        KeyboardLogger.writePointsToCSV(getApplicationContext(), session);
                         phraseInput.getText().clear();
                         nextPhrase();
                     }
@@ -126,6 +147,19 @@ public class MainActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        IntentFilter filter = new IntentFilter(SmartInputService.KEYBOARD_TOUCH);
+        registerReceiver(touchReceiver, filter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(touchReceiver);
     }
 
     private void checkMemory() {
@@ -266,8 +300,9 @@ public class MainActivity extends AppCompatActivity {
             phraseInput.setEnabled(true);
 
             session.clearData();
-
+            session.putOriginalPhrase(phrases.get(phraseIndex));
             setSessionText();
+            mapKeys();
 
             Toast.makeText(getApplicationContext(),"New session initialized", Toast.LENGTH_SHORT).show();
         } else {
@@ -297,6 +332,13 @@ public class MainActivity extends AppCompatActivity {
         nativeKeyboardTV.append(" " + session.getNativeKeyboard());
 
         phraseResultTV.setText("");
+    }
+
+    private void mapKeys() {
+        KeyboardView keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
+        Keyboard keyboard = new Keyboard(getApplicationContext(), R.xml.keys_layout);
+        keyboardView.setKeyboard(keyboard);
+        session.fillKeyMap(keyboard);
     }
 
 
