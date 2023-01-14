@@ -1,8 +1,10 @@
 package com.example.smartkeyboard;
 
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
@@ -16,16 +18,27 @@ import android.view.inputmethod.InputConnection;
 import android.widget.Toast;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SmartInputService extends InputMethodService implements KeyboardView.OnKeyboardActionListener, View.OnTouchListener {
     public static final String KEYBOARD_TOUCH = "KeyboardTouched";
+    public static final String KEYBOARD_SETTINGS = "KeyboardSettings";
 
     private KeyboardView keyboardView;
     private Keyboard keyboard;
 
     private boolean caps = false;
+    private BroadcastReceiver settingsReceiver;
 
     @Override
     public View onCreateInputView() {
@@ -34,6 +47,17 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
         keyboardView.setOnTouchListener(this);
+
+        settingsReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int x = intent.getIntExtra("x", 0);
+                int y = intent.getIntExtra("y", 0);
+
+                Log.d("TOUCH_BROADCAST", "TOUCH RECEIVED!\nX: " + x + "\nY: " + y);
+            }
+        };
+
         return keyboardView;
     }
 
@@ -81,9 +105,10 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                     break;
 
                 case Keyboard.KEYCODE_SHIFT:
-                    caps = !caps;
+                    /*caps = !caps;
                     keyboard.setShifted(caps);
-                    keyboardView.invalidateAllKeys();
+                    keyboardView.invalidateAllKeys();*/
+                    calibrateFromConfig();
                     break;
 
                 case Keyboard.KEYCODE_DONE:
@@ -100,6 +125,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                             break;
                         case 50:
                             //TODO pokreni kalbraciju
+                            calibrateFromConfig();
                             break;
                         case 51:
                             //TODO resetiraj kalibraciju
@@ -112,6 +138,31 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     }
 
 
+    private void calibrateFromConfig() {
+        try {
+            File input = new File(getFilesDir().getAbsolutePath());
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(input + "/keyboardConfig.txt"));
+
+            int i = 0;
+            String line = bufferedReader.readLine();
+
+            while (line != null) {
+                String[] coords = line.split(";");
+                int x = Math.abs(Integer.parseInt(coords[0]));
+                int y = Math.abs(Integer.parseInt(coords[1]));
+                System.out.println(line + " || " + x + " " + y);
+
+                this.keyboard.getKeys().get(i).width = x;
+                this.keyboard.getKeys().get(i).height = y;
+                i++;
+                line = bufferedReader.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        keyboardView.invalidateAllKeys();
+    }
 
     private Keyboard.Key findKey(int code) {
         List<Keyboard.Key> keys = this.keyboard.getKeys();

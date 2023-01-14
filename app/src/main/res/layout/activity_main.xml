@@ -66,6 +66,14 @@
             android:layout_marginBottom="10dp"
             android:textSize="15sp"/>
 
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="5dp"
+            android:layout_marginBottom="10dp"
+            android:textSize="15sp"/>
+
         <include layout="@layout/session_info"/>
+
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

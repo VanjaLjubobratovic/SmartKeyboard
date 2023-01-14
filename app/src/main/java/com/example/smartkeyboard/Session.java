@@ -1,5 +1,6 @@
 package com.example.smartkeyboard;
 
+import android.content.Context;
 import android.graphics.Point;
 import android.inputmethodservice.Keyboard;
 import android.os.Build;
@@ -11,6 +12,10 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -34,6 +39,8 @@ public class Session implements Parcelable {
     private ArrayList<HashMap<String, Double>> stats;
     private ArrayList<ArrayList<Point>> touchPoints;
     private LinkedHashMap<String, MistakeModel> mistakes;
+
+    private Keyboard keyboard;
 
     protected Session(Parcel in){
         user = in.readString();
@@ -341,6 +348,7 @@ public class Session implements Parcelable {
 
     public void fillKeyMap(Keyboard keyboard) {
         List<Keyboard.Key> keyList = keyboard.getKeys();
+        this.keyboard = keyboard;
         for (Keyboard.Key k : keyList) {
             mistakes.put(k.label.toString(), new MistakeModel(k));
         }
@@ -380,7 +388,8 @@ public class Session implements Parcelable {
 
     public void logMistakes() {
         for(MistakeModel m : mistakes.values()) {
-            Log.d("MISTAKE", m.toString());
+            //Log.d("MISTAKE", m.toString());
+            //Log.d("CENTROID", m.toStringCentroid());
         }
     }
 
@@ -406,13 +415,47 @@ public class Session implements Parcelable {
                 m.calculateCentroid();
             }
             logMistakes();
-            Voronoi v = new Voronoi();
-            v.mapToList(mistakes);
-            v.calcHeight();
-            v.calcWidth();
 
         }
         return this.numOfPhrases == this.getSize();
+    }
+
+    public void resizeKeyboard(Context context) {
+        Voronoi v = new Voronoi();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            v.mapToList(mistakes);
+        }
+        v.calcHeight();
+        v.calcWidth();
+
+        ArrayList<DoublePoint> dp = new ArrayList<>();
+
+        for(ArrayList<DoublePoint> l : v.getKeySizes()) {
+            dp.addAll(l);
+        }
+
+        List<Keyboard.Key> keyList = keyboard.getKeys();
+
+        String filename = "keyboardConfig.txt";
+        File file = new File(context.getFilesDir(), filename);
+        if(file.delete()) {
+            System.out.println("File deleted");
+        }
+
+        try {
+            StringBuilder output = new StringBuilder();
+            for (int i = 0; i < keyList.size(); i++) {
+                output.append((int)dp.get(i).getX()).append(";").append((int)dp.get(i).getY()).append(";").append(keyList.get(i).label).append("\n");
+            }
+
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+            bw.write(output.toString());
+            bw.close();
+            Log.d("FILE WRITER", "pointWriteToCSV: SUCCESS");
+        } catch (IOException e) {
+            Log.d("FILE WRITER", "pointWriteToCSV: IOException");
+            e.printStackTrace();
+        }
     }
 
     @Override

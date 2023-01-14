@@ -3,6 +3,7 @@ package com.example.smartkeyboard;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -18,6 +19,7 @@ import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -121,6 +123,9 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+
+
 
         phraseInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -164,7 +169,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkMemory() {
         SharedPreferences sharedPref = getSharedPreferences("sessionSettings", Context.MODE_PRIVATE);
-
         session.setUser(sharedPref.getString("username", "username"));
         session.setSessionID(sharedPref.getString("session_name", "session1"));
         session.setTestedKeyboard(sharedPref.getString("keyboard", "default"));
@@ -179,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -283,11 +288,14 @@ public class MainActivity extends AppCompatActivity {
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
         //Check if done
-        if (session.isDone()) {
-            KeyboardLogger.readTest(getApplicationContext(), session);
-            phraseInput.setEnabled(false);
-            generateBtn.setText("New session not yet started");
-            Toast.makeText(this, "You have successfully finished with this session!", Toast.LENGTH_LONG).show();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (session.isDone()) {
+                KeyboardLogger.readTest(getApplicationContext(), session);
+                phraseInput.setEnabled(false);
+                generateBtn.setText("New session not yet started");
+                Toast.makeText(this, "You have successfully finished with this session!", Toast.LENGTH_LONG).show();
+                session.resizeKeyboard(getApplicationContext());
+            }
         }
     }
 
@@ -338,6 +346,7 @@ public class MainActivity extends AppCompatActivity {
         KeyboardView keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
         Keyboard keyboard = new Keyboard(getApplicationContext(), R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
+
         session.fillKeyMap(keyboard);
     }
 

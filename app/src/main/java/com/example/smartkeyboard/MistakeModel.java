@@ -92,4 +92,8 @@ public class MistakeModel {
     public String toString() {
         return "KEY: " + key.label + "; missX: " + mistakeX + "; missY: " + mistakeY + "\n";
     }
+
+    public String toStringCentroid() {
+        return "KEY: " + key.label + "; centX: " + centroidX + "; centY: " + centroidY + "\n";
+    }
 }

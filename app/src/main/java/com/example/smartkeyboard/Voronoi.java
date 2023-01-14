@@ -33,10 +33,10 @@ public class Voronoi {
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void mapToList(LinkedHashMap<String, MistakeModel> map){
         AtomicInteger i = new AtomicInteger(0);
-        map.entrySet().forEach(entry -> {
+        for (MistakeModel entry : map.values()) {
             DoublePoint key = new DoublePoint();
-            key.setX(entry.getValue().getCenterX());
-            key.setY(entry.getValue().getCenterY());
+            key.setX(entry.getCenterX());
+            key.setY(entry.getCenterY());
             if(i.get() < 10){
                 optimalPoints.get(0).add(key);
             }
@@ -51,7 +51,9 @@ public class Voronoi {
             }
             i.getAndIncrement();
 
-        });
+            Log.d("CENTROID", entry.toStringCentroid());
+        }
+
     }
 
     public ArrayList<ArrayList<DoublePoint>> calcWidth(){
