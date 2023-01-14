@@ -2,13 +2,18 @@ package com.example.smartkeyboard;
 
 import android.graphics.Point;
 import android.inputmethodservice.Keyboard;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
+import android.util.DisplayMetrics;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Session implements Parcelable {
@@ -28,7 +33,7 @@ public class Session implements Parcelable {
      */
     private ArrayList<HashMap<String, Double>> stats;
     private ArrayList<ArrayList<Point>> touchPoints;
-    private HashMap<String, MistakeModel> mistakes;
+    private LinkedHashMap<String, MistakeModel> mistakes;
 
     protected Session(Parcel in){
         user = in.readString();
@@ -360,7 +365,7 @@ public class Session implements Parcelable {
         this.time = new ArrayList<>();
         this.stats = new ArrayList<>();
         this.touchPoints = new ArrayList<>();
-        this.mistakes = new HashMap<>();
+        this.mistakes = new LinkedHashMap<>();
         this.nextPhrase();
     }
 
@@ -393,14 +398,19 @@ public class Session implements Parcelable {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public boolean isDone() {
         if (this.numOfPhrases == this.getSize()) {
             for(MistakeModel m : mistakes.values()) {
                 m.calculateAvgMistake();
                 m.calculateCentroid();
             }
-
             logMistakes();
+            Voronoi v = new Voronoi();
+            v.mapToList(mistakes);
+            v.calcHeight();
+            v.calcWidth();
+
         }
         return this.numOfPhrases == this.getSize();
     }
