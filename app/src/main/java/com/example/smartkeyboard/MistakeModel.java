@@ -9,6 +9,7 @@ public class MistakeModel {
     private Integer mistakeX, mistakeY;
     private Integer totalMistakes;
     private Integer centroidX, centroidY;
+    private boolean adjusted;
 
     public MistakeModel(Keyboard.Key key, Integer mistakeX, Integer mistakeY) {
         this.key = key;
@@ -22,9 +23,18 @@ public class MistakeModel {
         this.mistakeX = 0;
         this.mistakeY = 0;
         this.totalMistakes = 0;
+        adjusted = false;
     }
 
     public MistakeModel() {
+    }
+
+    public boolean isAdjusted() {
+        return adjusted;
+    }
+
+    public void setAdjusted(boolean adjusted) {
+        this.adjusted = adjusted;
     }
 
     public Keyboard.Key getKey() {
@@ -82,6 +92,7 @@ public class MistakeModel {
     public void setTotalMistakes(Integer totalMistakes) {
         this.totalMistakes = totalMistakes;
     }
+
 
     public void addMistakes(Integer mistakeX, Integer mistakeY) {
         this.mistakeY += mistakeY;

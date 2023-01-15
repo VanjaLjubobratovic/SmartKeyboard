@@ -153,6 +153,15 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                 System.out.println(line + " || " + x + " " + y);
                 Keyboard.Key k = this.keyboard.getKeys().get(i);
 
+                int difference = x - k.width;
+
+                if(isLeftEdge(i)) {
+                    if(difference < 0)
+                        k.x -= difference / 2;
+                } else {
+                    k.x = this.keyboard.getKeys().get(i - 1).x + this.keyboard.getKeys().get(i - 1).width + 3;
+                }
+
                 k.width = x;
                 k.height = y;
 
@@ -180,6 +189,14 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         keyboard.changeKeyHeight();
         keyboardView.setKeyboard(keyboard);
         keyboardView.closing();
+    }
+
+    private boolean isRightEdge(int index) {
+        return (index == 9 || index == 18 || index == 27 || index == 31);
+    }
+
+    private boolean isLeftEdge(int index) {
+        return (index == 0 || index == 10 || index == 19 || index == 28);
     }
 
     private Keyboard.Key findKey(int code) {

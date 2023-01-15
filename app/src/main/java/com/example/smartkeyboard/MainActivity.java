@@ -192,7 +192,9 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.logSettings:
                 //TODO: Add some sort of dialog
-                if (session.isDone()) {
+                //TODO: Enable this again
+                //if (session.isDone()) {
+                if(true){
                     KeyboardLogger.uploadLog(getApplicationContext(), session, storageReference, this);
                 }
                 else{

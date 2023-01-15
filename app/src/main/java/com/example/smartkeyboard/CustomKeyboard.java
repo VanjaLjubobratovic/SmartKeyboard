@@ -21,7 +21,7 @@ public class CustomKeyboard extends Keyboard {
 
     public void changeKeyHeight()
     {
-        int height = (getKeys().get(9).height + getKeys().get(18).height + getKeys().get(27).height + getKeys().get(28).height) / 4 + 10;
+        int height = (getKeys().get(9).height + getKeys().get(18).height + getKeys().get(27).height + getKeys().get(28).height) / 4; //+ 10;
         setKeyHeight(height);
 
         /*somehow adding this fixed a weird bug where bottom row keys could not be pressed if keyboard height is too tall..
