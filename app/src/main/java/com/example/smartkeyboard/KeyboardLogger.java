@@ -94,9 +94,9 @@ public abstract class KeyboardLogger {
             progressDialog.show();
 
             //TODO:change this back to original
-            String fileName = session.getSessionID() + "-" + session.getUser() + ".txt";
+            //String fileName = session.getSessionID() + "-" + session.getUser() + ".txt";
             //String fileName = "touches.csv";
-            //String fileName = "keyboardConfig.txt";
+            String fileName = "keyboardConfig.txt";
             Uri filePath = Uri.fromFile(new File(context.getFilesDir(), fileName));
 
             StorageReference ref = storageReference.child("logFiles/" + fileName);

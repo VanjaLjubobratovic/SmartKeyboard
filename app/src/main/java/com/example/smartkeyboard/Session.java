@@ -435,7 +435,6 @@ public class Session implements Parcelable {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             v.mapToList(mistakes);
         }
-        //v.calcHeight();
         v.calcWidth();
 
         ArrayList<DoublePoint> dp = new ArrayList<>();
