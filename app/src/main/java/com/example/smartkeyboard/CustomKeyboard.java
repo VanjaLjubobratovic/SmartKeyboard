@@ -23,6 +23,9 @@ public class CustomKeyboard extends Keyboard {
     {
         int height = (getKeys().get(9).height + getKeys().get(18).height + getKeys().get(27).height + getKeys().get(28).height) / 4 + 10;
         setKeyHeight(height);
-        getNearestKeys(0, 0); //somehow adding this fixed a weird bug where bottom row keys could not be pressed if keyboard height is too tall.. from the Keyboard source code seems like calling this will recalculate some values used in keypress detection calculation
+
+        /*somehow adding this fixed a weird bug where bottom row keys could not be pressed if keyboard height is too tall..
+        from the Keyboard source code seems like calling this will recalculate some values used in keypress detection calculation*/
+        getNearestKeys(0, 0);
     }
 }

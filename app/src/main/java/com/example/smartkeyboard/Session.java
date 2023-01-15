@@ -311,14 +311,12 @@ public class Session implements Parcelable {
     private void calculateMistakes(String original) {
         String finalInput = this.transcribed.get(getSize()).get("FINAL");
         int length = 0;
-        if(original.length() > finalInput.length()) {
-            length = finalInput.length();
-        } else {
-            length = original.length();
-        }
+
+        if (finalInput != null) {
+            length = Math.min(original.length(), finalInput.length());
+        } else return;
 
         for(int i = 0; i < length; i++) {
-            assert finalInput != null;
             if (original.toCharArray()[i] != finalInput.toCharArray()[i]) {
                 String key = original.substring(i,i+1);
                 if(original.charAt(i) == ' ') {
@@ -326,19 +324,31 @@ public class Session implements Parcelable {
                 }
 
                 MistakeModel m = mistakes.get(key);
+                Point touch = touchPoints.get(touchPoints.size() - 1).get(i);
 
-                try {
-                    int missX = touchPoints.get(touchPoints.size() - 1).get(i).x - m.getCenterX();
-                    int missY = touchPoints.get(touchPoints.size() - 1).get(i).y - m.getCenterY();
+                if (m != null) {
+                    int missX = touch.x - m.getCenterX();
+                    int missY = touch.y - m.getCenterY();
 
                     Log.d("MISTAKE", missX + " " + missY + " || " + m.getKey().width + " " + m.getKey().height);
 
                     //If press is simply too far from correct letter we ignore such mistake
-                    if (Math.abs(missX) > m.getKey().width || Math.abs(missY) > m.getKey().height)
+                    if (Math.abs(missX) > m.getKey().width || Math.abs(missY) > m.getKey().height) {
                         continue;
+                    } else if (key.equals("SPACE")) {
+                        //If there's a space in original phrase and pressed key is too far from space so it isn't a typo
+                        //the keyboard probably didn't accept user's space press, so we mitigate it here
+                        //so that correctly typed text after that isn't automatically counted as errors
+
+                        StringBuilder sb = new StringBuilder(finalInput);
+                        sb.insert(i, " ");
+                        finalInput = sb.toString();
+                        length = Math.min(finalInput.length(), original.length());
+                        touchPoints.get(touchPoints.size() - 1).add(i,touch);
+                    }
 
                     m.addMistakes(missX, missY);
-                } catch (Exception e) {
+                } else {
                     Log.e("ERROR", "Key: " + key + " cannot be found in map");
                     Log.e("ERROR", mistakes.keySet().toString());
                 }
@@ -352,7 +362,7 @@ public class Session implements Parcelable {
         for (Keyboard.Key k : keyList) {
             mistakes.put(k.label.toString(), new MistakeModel(k));
         }
-        logMistakes();
+        //logMistakes();
     }
 
     private void calculateWpm(String phrase, double TER, int time) {
@@ -388,8 +398,8 @@ public class Session implements Parcelable {
 
     public void logMistakes() {
         for(MistakeModel m : mistakes.values()) {
-            //Log.d("MISTAKE", m.toString());
-            //Log.d("CENTROID", m.toStringCentroid());
+            Log.d("MISTAKE", m.toString());
+            Log.d("CENTROID", m.toStringCentroid());
         }
     }
 
