@@ -28,4 +28,6 @@ public class CustomKeyboard extends Keyboard {
         from the Keyboard source code seems like calling this will recalculate some values used in keypress detection calculation*/
         getNearestKeys(0, 0);
     }
+
+
 }

@@ -38,45 +38,25 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     private CustomKeyboard keyboard;
 
     private boolean caps = false;
-    private BroadcastReceiver settingsReceiver;
 
     @Override
     public View onCreateInputView() {
         keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
         keyboard = new CustomKeyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
+        keyboardView.setPreviewEnabled(false);
         keyboardView.setOnKeyboardActionListener(this);
         keyboardView.setOnTouchListener(this);
-
-        settingsReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                int x = intent.getIntExtra("x", 0);
-                int y = intent.getIntExtra("y", 0);
-
-                Log.d("TOUCH_BROADCAST", "TOUCH RECEIVED!\nX: " + x + "\nY: " + y);
-            }
-        };
 
         return keyboardView;
     }
 
     @Override
-    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
-        Keyboard settings = new Keyboard(this, R.xml.settings_keys);
-        keyboardView.setKeyboard(settings);
-        Toast.makeText(this, "Setting keys opened", Toast.LENGTH_SHORT).show();
-        return super.onKeyLongPress(keyCode, event);
-    }
-
-    @Override
     public void onPress(int i) {
-
     }
 
     @Override
     public void onRelease(int i) {
-
     }
 
 
@@ -136,6 +116,8 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
             }
         }
     }
+
+
 
 
     private void calibrateFromConfig() {
@@ -273,6 +255,8 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     public Keyboard getKeyboard() {
         return this.keyboard;
     }
+
+
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
