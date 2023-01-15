@@ -54,43 +54,74 @@ public class Voronoi {
     }
 
     public ArrayList<ArrayList<DoublePoint>> calcWidth(){
+        int i = 0;
         for (ArrayList<MistakeModel> row : optimalPoints) {
             ArrayList<DoublePoint> rowSizes = new ArrayList<>();
             int rowMistakes = 0;
             int rowWidth = 0;
             int alreadyAdjustedKeys = 0;
+
             for(MistakeModel m : row) {
                 rowMistakes += m.getTotalMistakes();
-                rowWidth += m.getKey().width - 3;
+                //rowWidth += m.getKey().width;
             }
 
-            rowWidth -= 6;
+            rowWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+            //rowWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+            rowWidth -= (row.size() - 1) * 3;
+            if(i == 1) {
+                rowWidth -= rowWidth * 0.08;
+            }
+            int originalRowWidth = rowWidth;
+            System.out.println("ROW WIDTH:" + rowWidth);
 
             //Adjusting keys with mistakes
             for (MistakeModel m : row) {
-                if(m.getTotalMistakes() != 0) {
+                if(Math.abs(m.getMistakeX()) > 10) {
                     alreadyAdjustedKeys++;
+                    //Adjusting key width in proportion to the ammount of mistakes happening per
+                    //that key in a row
                     double width = m.getKey().width;
-                    width += width * ((double)m.getTotalMistakes() / (double)rowMistakes);
+                    //width += width * ((double)m.getTotalMistakes() / (double)rowMistakes);
+
+                    //Increasing width by percentage of average mistake on X axis in proportion to button width
+                    width += width * ((Math.abs(m.getMistakeX()) / width)) * 0.7;
                     m.getKey().width = (int)width;
                     rowWidth -= width;
                     m.setAdjusted(true);
-                } else if(!neighbourHasMistake(m, row)) {
+                    alreadyAdjustedKeys++;
+                } else if(/*!neighbourHasMistake(m, row) || */isStaticKey(m.getKey().label.toString())) {
                     m.setAdjusted(true);
+                    rowWidth -= m.getKey().width;
+                    alreadyAdjustedKeys++;
                 }
             }
 
-
+            int adjustedRowWidth = 0;
             for (MistakeModel m : row) {
                 if(m.getTotalMistakes() == 0 && !m.isAdjusted()) {
                     m.getKey().width = rowWidth / (row.size() - alreadyAdjustedKeys);
                 }
+                adjustedRowWidth += m.getKey().width;
             }
 
+            adjustedRowWidth -= (row.size() - 1) * 3;
+            if(i == 1) {
+                adjustedRowWidth -= rowWidth * 0.08;
+            }
+
+            //Normalizing to max width if all keys get too large
             for (MistakeModel m : row) {
-                rowSizes.add(new DoublePoint(m.getKey().width, m.getKey().height));
+                double coef = 1;
+                if(adjustedRowWidth > originalRowWidth) {
+                    coef = originalRowWidth / (double)adjustedRowWidth;
+                }
+                System.out.println("WIDTHS ORIGINAL: " + originalRowWidth);
+                System.out.println("WIDTHS ADJUSTED: " + adjustedRowWidth);
+                rowSizes.add(new DoublePoint(m.getKey().width * coef, m.getKey().height));
             }
             keySizes.add(rowSizes);
+            i++;
         }
     return keySizes;
     }
@@ -108,6 +139,10 @@ public class Voronoi {
         }
 
         return mistakeLeft || mistakeRight;
+    }
+
+    private boolean isStaticKey(String label) {
+        return label.equals("SPACE") || label.equals("DEL") || label.equals("CAPS") || label.equals("DONE");
     }
 
 

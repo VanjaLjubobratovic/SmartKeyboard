@@ -323,35 +323,39 @@ public class Session implements Parcelable {
                     key = "SPACE";
                 }
 
-                MistakeModel m = mistakes.get(key);
-                Point touch = touchPoints.get(touchPoints.size() - 1).get(i);
+                try {
+                    MistakeModel m = mistakes.get(key);
+                    Point touch = touchPoints.get(touchPoints.size() - 1).get(i);
+                    if (m != null) {
+                        int missX = touch.x - m.getCenterX();
+                        int missY = touch.y - m.getCenterY();
 
-                if (m != null) {
-                    int missX = touch.x - m.getCenterX();
-                    int missY = touch.y - m.getCenterY();
+                        Log.d("MISTAKE", missX + " " + missY + " || " + m.getKey().width + " " + m.getKey().height);
 
-                    Log.d("MISTAKE", missX + " " + missY + " || " + m.getKey().width + " " + m.getKey().height);
+                        //If press is simply too far from correct letter we ignore such mistake
+                        if (Math.abs(missX) > m.getKey().width || Math.abs(missY) > m.getKey().height) {
+                            continue;
+                        } else if (key.equals("SPACE")) {
+                            //If there's a space in original phrase and pressed key is too far from space so it isn't a typo
+                            //the keyboard probably didn't accept user's space press, so we mitigate it here
+                            //so that correctly typed text after that isn't automatically counted as errors
 
-                    //If press is simply too far from correct letter we ignore such mistake
-                    if (Math.abs(missX) > m.getKey().width || Math.abs(missY) > m.getKey().height) {
-                        continue;
-                    } else if (key.equals("SPACE")) {
-                        //If there's a space in original phrase and pressed key is too far from space so it isn't a typo
-                        //the keyboard probably didn't accept user's space press, so we mitigate it here
-                        //so that correctly typed text after that isn't automatically counted as errors
+                            StringBuilder sb = new StringBuilder(finalInput);
+                            sb.insert(i, " ");
+                            finalInput = sb.toString();
+                            length = Math.min(finalInput.length(), original.length());
+                            touchPoints.get(touchPoints.size() - 1).add(i,touch);
+                        }
 
-                        StringBuilder sb = new StringBuilder(finalInput);
-                        sb.insert(i, " ");
-                        finalInput = sb.toString();
-                        length = Math.min(finalInput.length(), original.length());
-                        touchPoints.get(touchPoints.size() - 1).add(i,touch);
+                        m.addMistakes(missX, missY);
+                    } else {
+                        Log.e("ERROR", "Key: " + key + " cannot be found in map");
+                        Log.e("ERROR", mistakes.keySet().toString());
                     }
-
-                    m.addMistakes(missX, missY);
-                } else {
-                    Log.e("ERROR", "Key: " + key + " cannot be found in map");
-                    Log.e("ERROR", mistakes.keySet().toString());
+                } catch (IndexOutOfBoundsException e) {
+                    e.printStackTrace();
                 }
+
             }
         }
     }

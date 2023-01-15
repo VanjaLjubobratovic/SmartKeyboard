@@ -156,10 +156,17 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                 int difference = x - k.width;
 
                 if(isLeftEdge(i)) {
-                    if(difference < 0)
+                    if(difference < 0) {
                         k.x -= difference / 2;
+                    }
+
+                    if(i == 10) {
+                        k.x += 3;
+                    }
+                    //-3 as not to put key spacing on the left side on the left edge key
+                    k.x -= 3;
                 } else {
-                    k.x = this.keyboard.getKeys().get(i - 1).x + this.keyboard.getKeys().get(i - 1).width + 3;
+                    k.x = this.keyboard.getKeys().get(i - 1).x + this.keyboard.getKeys().get(i - 1).width + 1;
                 }
 
                 k.width = x;
