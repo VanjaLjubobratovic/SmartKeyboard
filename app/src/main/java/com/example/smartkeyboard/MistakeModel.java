@@ -59,6 +59,22 @@ public class MistakeModel {
         return this.key.y + this.key.height / 2;
     }
 
+    public Integer getCentroidX() {
+        return centroidX;
+    }
+
+    public void setCentroidX(Integer centroidX) {
+        this.centroidX = centroidX;
+    }
+
+    public Integer getCentroidY() {
+        return centroidY;
+    }
+
+    public void setCentroidY(Integer centroidY) {
+        this.centroidY = centroidY;
+    }
+
     public Integer getTotalMistakes() {
         return totalMistakes;
     }

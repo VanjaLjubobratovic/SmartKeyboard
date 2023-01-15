@@ -10,18 +10,22 @@ import androidx.annotation.RequiresApi;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Voronoi {
-    private ArrayList<ArrayList<DoublePoint>> optimalPoints = new ArrayList<>();
-    private ArrayList<ArrayList<DoublePoint>> keySizes = new ArrayList<ArrayList<DoublePoint>>();
-    private ArrayList<Double> keyHeight = new ArrayList<>();
+    private ArrayList<ArrayList<DoublePoint>> optimalPoints;
+    private ArrayList<ArrayList<DoublePoint>> keySizes;
+    private ArrayList<Double> keyHeight;
     private double leftBorder = 0, rightBorder = 150;
 
     /*public Voronoi(ArrayList<ArrayList<DoublePoint>> optimalPoints){
         this.optimalPoints = optimalPoints;
     }*/
     public Voronoi(){
+        optimalPoints = new ArrayList<>();
+        keySizes = new ArrayList<>();
+        keyHeight = new ArrayList<>();
         for(int i =0 ; i < 4; i++){
             ArrayList<DoublePoint> row = new ArrayList<>();
             optimalPoints.add(row);
@@ -32,33 +36,32 @@ public class Voronoi {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void mapToList(LinkedHashMap<String, MistakeModel> map){
-        AtomicInteger i = new AtomicInteger(0);
+        int i = 0;
         for (MistakeModel entry : map.values()) {
-            DoublePoint key = new DoublePoint();
-            key.setX(entry.getCenterX());
-            key.setY(entry.getCenterY());
-            if(i.get() < 10){
+            DoublePoint key = new DoublePoint(entry.getCentroidX(), entry.getCentroidY());
+            if(i < 10){
                 optimalPoints.get(0).add(key);
-            }
-            if(i.get() < 19){
+            }else if(i < 19){
                 optimalPoints.get(1).add(key);
-            }
-            if(i.get() < 28){
+            } else if(i < 28){
                 optimalPoints.get(2).add(key);
-            }
-            if(i.get() < 32){
+            } else if(i < 32){
                 optimalPoints.get(3).add(key);
             }
-            i.getAndIncrement();
 
-            Log.d("CENTROID", entry.toStringCentroid());
+            i++;
+
+            Log.d("MISTAKE", entry.toString());
+            Log.d("MISTAKE", key.getX() + "; " + key.getY());
         }
+
+        System.out.println("ROW SIZE: " + optimalPoints.get(3).size());
 
     }
 
     public ArrayList<ArrayList<DoublePoint>> calcWidth(){
-        for(int i = 0; i < optimalPoints.size(); i++){
-            ArrayList<DoublePoint> row = new ArrayList<DoublePoint>();
+        /*for(int i = 0; i < optimalPoints.size(); i++){
+            ArrayList<DoublePoint> row = new ArrayList<>();
             DoublePoint firstKey = new DoublePoint();
             firstKey.setX((optimalPoints.get(i).get(0).getX() + optimalPoints.get(i).get(1).getX()) / 2 - leftBorder);
             firstKey.setY(keyHeight.get(i));
@@ -76,9 +79,34 @@ public class Voronoi {
             lastKey.setY(keyHeight.get(i));
             row.add(lastKey);
             keySizes.add(row);
+        }*/
+
+        for(ArrayList<DoublePoint> row : optimalPoints) {
+            ArrayList<DoublePoint> rowSizes = new ArrayList<>();
+            for(DoublePoint key : row) {
+                int index = row.indexOf(key);
+                System.out.println("KEY SIZE |||| " + key.getX() + ";" + key.getY() + " INDEX: " + index);
+                if(index != 0 && index != row.size() - 1) {
+                    int left = (int)(key.getX() - row.get(index - 1).getX()) / 2;
+                    int right = (int)(row.get(index + 1).getX() - key.getX()) / 2;
+
+                    rowSizes.add(new DoublePoint(left + right, 150));
+                } else if (index == 0) {
+                    int right = (int)(row.get(index + 1).getX() - key.getX()) / 2;
+
+                    rowSizes.add(new DoublePoint(right * 2, 150));
+                } else {
+                    int left = (int)(key.getX() - row.get(index - 1).getX()) / 2;
+
+                    rowSizes.add(new DoublePoint(left * 2, 150));
+                }
+
+                System.out.println("KEY SIZE: " + rowSizes.get(rowSizes.size() - 1).getX());
+            }
+            keySizes.add(rowSizes);
         }
-        Log.d("KEY WIDTH", "Width: " + String.valueOf(keySizes.get(0).get(1).getX()) + "Height: " +
-                String.valueOf(keySizes.get(0).get(1).getY()));
+        /*Log.d("KEY WIDTH", "Width: " + String.valueOf(keySizes.get(0).get(1).getX()) + "Height: " +
+                String.valueOf(keySizes.get(0).get(1).getY()));*/
     return keySizes;
     }
 
