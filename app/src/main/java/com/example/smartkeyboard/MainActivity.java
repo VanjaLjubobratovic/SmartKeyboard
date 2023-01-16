@@ -284,6 +284,8 @@ public class MainActivity extends AppCompatActivity {
 
         generateBtn.setText(phrases.get(session.getSize()));
 
+        session.putOriginalPhrase(generateBtn.getText().toString());
+
         //Hide keyboard
         InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
         View view = MainActivity.this.getCurrentFocus();
@@ -310,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
             phraseInput.setEnabled(true);
 
             session.clearData();
-            session.putOriginalPhrase(phrases.get(phraseIndex));
+            session.putOriginalPhrase(generateBtn.getText().toString());
             setSessionText();
             mapKeys();
 

@@ -99,6 +99,7 @@ public class Session implements Parcelable {
         this.transcribed = transcribed;
     }
 
+
     public String getUser() {
         return user;
     }
