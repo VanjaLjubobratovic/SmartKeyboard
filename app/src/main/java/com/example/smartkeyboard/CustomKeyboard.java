@@ -30,4 +30,9 @@ public class CustomKeyboard extends Keyboard {
     }
 
 
+
+    @Override
+    protected void setHorizontalGap(int gap) {
+        super.setHorizontalGap(gap);
+    }
 }

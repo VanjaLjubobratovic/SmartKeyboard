@@ -67,10 +67,8 @@ public class Voronoi {
             }
 
             rowWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-            //rowWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-            rowWidth -= (row.size() - 1) * 3;
             if(i == 1) {
-                rowWidth -= rowWidth * 0.08;
+                rowWidth -= rowWidth * 0.1;
             }
             int originalRowWidth = rowWidth;
             System.out.println("ROW WIDTH:" + rowWidth);
@@ -105,21 +103,19 @@ public class Voronoi {
                 adjustedRowWidth += m.getKey().width;
             }
 
-            adjustedRowWidth -= (row.size() - 1) * 3;
-            if(i == 1) {
-                adjustedRowWidth -= rowWidth * 0.08;
+            //Normalizing to max width if all keys get too large
+            int check = 0;
+            double coef = originalRowWidth / (double) adjustedRowWidth;
+
+            for (MistakeModel m : row) {
+                m.getKey().width *= coef;
+                rowSizes.add(new DoublePoint(m.getKey().width, m.getKey().height));
+                check += m.getKey().width;
             }
 
-            //Normalizing to max width if all keys get too large
-            for (MistakeModel m : row) {
-                double coef = 1;
-                if(adjustedRowWidth > originalRowWidth) {
-                    coef = originalRowWidth / (double)adjustedRowWidth;
-                }
-                System.out.println("WIDTHS ORIGINAL: " + originalRowWidth);
-                System.out.println("WIDTHS ADJUSTED: " + adjustedRowWidth);
-                rowSizes.add(new DoublePoint(m.getKey().width * coef, m.getKey().height));
-            }
+            System.out.println("WIDTHS ORIGINAL: " + originalRowWidth);
+            System.out.println("WIDTHS ADJUSTED: " + adjustedRowWidth);
+            System.out.println("FINAL WIDTH: " + check);
             keySizes.add(rowSizes);
             i++;
         }

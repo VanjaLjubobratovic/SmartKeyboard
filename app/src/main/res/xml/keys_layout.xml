@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Keyboard xmlns:android="http://schemas.android.com/apk/res/android"
     android:keyWidth="10%p"
-    android:horizontalGap="3px"
-    android:verticalGap="10px"
     android:keyHeight="55dp"
     android:keyTextColor="@color/white">
 
@@ -19,7 +17,7 @@
         <Key android:codes="112" android:keyLabel="p" android:keyEdgeFlags="right"/>
     </Row>
     <Row>
-        <Key android:codes="97" android:keyLabel="a" android:keyEdgeFlags="left" android:horizontalGap="4%"/>
+        <Key android:codes="97" android:keyLabel="a" android:keyEdgeFlags="left" android:horizontalGap="5%"/>
         <Key android:codes="115" android:keyLabel="s"/>
         <Key android:codes="100" android:keyLabel="d"/>
         <Key android:codes="102" android:keyLabel="f"/>

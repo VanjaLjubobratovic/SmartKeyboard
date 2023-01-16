@@ -142,13 +142,13 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                         k.x -= difference / 2;
                     }
 
-                    if(i == 10) {
+                   /* if(i == 10) {
                         k.x += 3;
                     }
                     //-3 as not to put key spacing on the left side on the left edge key
-                    k.x -= 3;
+                    k.x -= 3;*/
                 } else {
-                    k.x = this.keyboard.getKeys().get(i - 1).x + this.keyboard.getKeys().get(i - 1).width + 1;
+                    k.x = this.keyboard.getKeys().get(i - 1).x + this.keyboard.getKeys().get(i - 1).width;
                 }
 
                 k.width = x;
@@ -167,7 +167,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                     continue;
                 }
 
-                k.y = keyboard.getKeys().get(lookupIndex).height + keyboard.getKeys().get(lookupIndex).y + 10;
+                k.y = keyboard.getKeys().get(lookupIndex).height + keyboard.getKeys().get(lookupIndex).y;
                 i++;
                 line = bufferedReader.readLine();
             }
