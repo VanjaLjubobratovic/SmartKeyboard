@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
-import android.util.DisplayMetrics;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
@@ -439,7 +438,7 @@ public class Session implements Parcelable {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             v.mapToList(mistakes);
         }
-        v.calcWidth();
+        v.calcAdjustments();
 
         ArrayList<DoublePoint> dp = new ArrayList<>();
 

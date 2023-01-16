@@ -8,6 +8,7 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 
 public class Voronoi {
@@ -53,20 +54,28 @@ public class Voronoi {
 
     }
 
-    public ArrayList<ArrayList<DoublePoint>> calcWidth(){
+    public ArrayList<ArrayList<DoublePoint>> calcAdjustments(){
         int i = 0;
         for (ArrayList<MistakeModel> row : optimalPoints) {
             ArrayList<DoublePoint> rowSizes = new ArrayList<>();
-            int rowMistakes = 0;
-            int rowWidth = 0;
+            int heightMistakes = 0;
+            int numOfHeightMistakes = 0;
             int alreadyAdjustedKeys = 0;
 
+            int totalHeightAdjustment = 0;
+
             for(MistakeModel m : row) {
-                rowMistakes += m.getTotalMistakes();
-                //rowWidth += m.getKey().width;
+                if(m.getMistakeY() != 0) {
+                    heightMistakes += Math.abs(m.getMistakeX());
+                    numOfHeightMistakes++;
+                }
             }
 
-            rowWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+            numOfHeightMistakes = (numOfHeightMistakes == 0) ? 1 : numOfHeightMistakes;
+
+            totalHeightAdjustment = heightMistakes / numOfHeightMistakes;
+
+            int rowWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
             if(i == 1) {
                 rowWidth -= rowWidth * 0.1;
             }
@@ -80,7 +89,6 @@ public class Voronoi {
                     //Adjusting key width in proportion to the ammount of mistakes happening per
                     //that key in a row
                     double width = m.getKey().width;
-                    //width += width * ((double)m.getTotalMistakes() / (double)rowMistakes);
 
                     //Increasing width by percentage of average mistake on X axis in proportion to button width
                     width += width * ((Math.abs(m.getMistakeX()) / width)) * 0.7;
@@ -108,6 +116,10 @@ public class Voronoi {
             double coef = originalRowWidth / (double) adjustedRowWidth;
 
             for (MistakeModel m : row) {
+                //adjusting height
+                m.getKey().height = m.getKey().height + (int)(totalHeightAdjustment * 0.5);
+
+                //Normalizing adjusted width
                 m.getKey().width *= coef;
                 rowSizes.add(new DoublePoint(m.getKey().width, m.getKey().height));
                 check += m.getKey().width;
@@ -121,6 +133,7 @@ public class Voronoi {
         }
     return keySizes;
     }
+
 
     private boolean neighbourHasMistake(MistakeModel m, ArrayList<MistakeModel> row) {
         boolean mistakeLeft = false;
