@@ -339,12 +339,15 @@ public class Session implements Parcelable {
                             //If there's a space in original phrase and pressed key is too far from space so it isn't a typo
                             //the keyboard probably didn't accept user's space press, so we mitigate it here
                             //so that correctly typed text after that isn't automatically counted as errors
-
                             StringBuilder sb = new StringBuilder(finalInput);
-                            sb.insert(i, " ");
+
+                            if(original.toCharArray()[i+1] == finalInput.toCharArray()[i]) {
+                                sb.insert(i, " ");
+                                touchPoints.get(touchPoints.size() - 1).add(i,touch);
+                            }
+
                             finalInput = sb.toString();
                             length = Math.min(finalInput.length(), original.length());
-                            touchPoints.get(touchPoints.size() - 1).add(i,touch);
                         }
 
                         m.addMistakes(missX, missY);
