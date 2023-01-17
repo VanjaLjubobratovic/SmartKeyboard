@@ -3,17 +3,25 @@ package com.example.smartkeyboard;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.inputmethodservice.InputMethodService;
+import android.inputmethodservice.Keyboard;
+import android.inputmethodservice.KeyboardView;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -21,6 +29,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -52,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private StorageReference storageReference;
 
     private Session session;
+    private BroadcastReceiver touchReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +94,39 @@ public class MainActivity extends AppCompatActivity {
         setSessionText();
 
 
+        //Testing for Voronoi
+        //TODO: Remove after no longer neccesary
+        /*ArrayList<ArrayList<DoublePoint>> optimal = new ArrayList<ArrayList<DoublePoint>>();
+
+        for(int i = 0; i < 1; i ++){
+            ArrayList<DoublePoint> row = new ArrayList<DoublePoint>();
+            for(int j = 1; j < 16; j+=2){
+                DoublePoint point = new DoublePoint();
+                point.setX(j);
+                row.add(point);
+            }
+            optimal.add(row);
+        }
+
+        Voronoi test = new Voronoi(optimal);
+        ArrayList<ArrayList<DoublePoint>> newPoints = test.calcWidth();
+        Toast.makeText(this, String.valueOf(newPoints.get(0).get(7).getX()), Toast.LENGTH_LONG).show();*/
+
+        touchReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int x = intent.getIntExtra("x", 0);
+                int y = intent.getIntExtra("y", 0);
+                session.addTouchPoint(x, y);
+
+                Log.d("TOUCH_BROADCAST", "TOUCH RECEIVED!\nX: " + x + "\nY: " + y);
+            }
+        };
+
+        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+
+
+
         phraseInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -98,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
                     //New line detected, input finished
                     if(!session.transcribe(charSequence.toString(), generateBtn.getText().toString())) {
                         KeyboardLogger.writeToCSV(getApplicationContext(), session);
+                        KeyboardLogger.writePointsToCSV(getApplicationContext(), session);
                         phraseInput.getText().clear();
                         nextPhrase();
                     }
@@ -110,9 +154,21 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        IntentFilter filter = new IntentFilter(SmartInputService.KEYBOARD_TOUCH);
+        registerReceiver(touchReceiver, filter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(touchReceiver);
+    }
+
     private void checkMemory() {
         SharedPreferences sharedPref = getSharedPreferences("sessionSettings", Context.MODE_PRIVATE);
-
         session.setUser(sharedPref.getString("username", "username"));
         session.setSessionID(sharedPref.getString("session_name", "session1"));
         session.setTestedKeyboard(sharedPref.getString("keyboard", "default"));
@@ -127,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -135,7 +192,9 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.logSettings:
                 //TODO: Add some sort of dialog
-                if (session.isDone()) {
+                //TODO: Enable this again
+                //if (session.isDone()) {
+                if(true){
                     KeyboardLogger.uploadLog(getApplicationContext(), session, storageReference, this);
                 }
                 else{
@@ -163,6 +222,9 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+
+
 
     public void initSessionConfirm() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -222,17 +284,22 @@ public class MainActivity extends AppCompatActivity {
 
         generateBtn.setText(phrases.get(session.getSize()));
 
+        session.putOriginalPhrase(generateBtn.getText().toString());
+
         //Hide keyboard
         InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
         View view = MainActivity.this.getCurrentFocus();
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
         //Check if done
-        if (session.isDone()) {
-            KeyboardLogger.readTest(getApplicationContext(), session);
-            phraseInput.setEnabled(false);
-            generateBtn.setText("New session not yet started");
-            Toast.makeText(this, "You have successfully finished with this session!", Toast.LENGTH_LONG).show();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (session.isDone()) {
+                KeyboardLogger.readTest(getApplicationContext(), session);
+                phraseInput.setEnabled(false);
+                generateBtn.setText("New session not yet started");
+                Toast.makeText(this, "You have successfully finished with this session!", Toast.LENGTH_LONG).show();
+                session.resizeKeyboard(getApplicationContext());
+            }
         }
     }
 
@@ -245,8 +312,9 @@ public class MainActivity extends AppCompatActivity {
             phraseInput.setEnabled(true);
 
             session.clearData();
-
+            session.putOriginalPhrase(generateBtn.getText().toString());
             setSessionText();
+            mapKeys();
 
             Toast.makeText(getApplicationContext(),"New session initialized", Toast.LENGTH_SHORT).show();
         } else {
@@ -276,6 +344,14 @@ public class MainActivity extends AppCompatActivity {
         nativeKeyboardTV.append(" " + session.getNativeKeyboard());
 
         phraseResultTV.setText("");
+    }
+
+    private void mapKeys() {
+        KeyboardView keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
+        Keyboard keyboard = new Keyboard(getApplicationContext(), R.xml.keys_layout);
+        keyboardView.setKeyboard(keyboard);
+
+        session.fillKeyMap(keyboard);
     }
 
 

@@ -202,5 +202,8 @@ public class SessionSettingsActivity extends AppCompatActivity {
             AlertDialog alert = builder.create();
             alert.show();
         }
+        else{
+            finish();
+        }
     }
 }

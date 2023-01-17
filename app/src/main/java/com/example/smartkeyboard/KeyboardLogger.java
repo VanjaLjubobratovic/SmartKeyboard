@@ -3,6 +3,7 @@ package com.example.smartkeyboard;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Point;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
@@ -23,13 +24,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
 public abstract class KeyboardLogger {
 
     public static void writeToCSV(Context context, Session session) {
-        String filename = session.getSessionID() + "-" + session.getUser() + ".txt";
+        String filename = session.getUser() + "-" + session.getSessionID()  +  ".txt";
         File file = new File(context.getFilesDir(), filename);
 
         try {
@@ -38,10 +40,13 @@ public abstract class KeyboardLogger {
             String timestamp = df.format(new Date());
 
             HashMap<String, Double> stat = session.getStats().get(session.getSize() - 1);
+            HashMap<String, String> phrases =  session.getTranscribed().get(session.getSize() - 1);
 
             output = timestamp + "-" + session.getUser() + "-" + session.getSessionID() + "||time-"
                     + session.getTime().replace(" ", "") + ";TER-" + String.format("%.2f", stat.get("TER"))
-                    + ";WPM-" + String.format("%.2f", stat.get("WPM")) + ";AWPM-" + String.format("%.2f", stat.get("AWPM")) + "\n";
+                    + ";WPM-" + String.format("%.2f", stat.get("WPM")) + ";AWPM-" + String.format("%.2f", stat.get("AWPM"))
+                    + ";ORIGINAL-" +  phrases.get("ORIGINAL") + ";FINAL-" +  phrases.get("FINAL") + ";RAW-" + phrases.get("RAW")
+                    + ";INDEX-" + (session.getSize() - 1) + "\n";
 
             BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
             bw.write(output);
@@ -49,6 +54,30 @@ public abstract class KeyboardLogger {
             Log.d("FILE WRITER", "writeToCSV: SUCCESS");
         } catch (IOException e) {
             Log.d("FILE WRITER", "writeToCSV: IOException");
+            e.printStackTrace();
+        }
+    }
+
+    public static void writePointsToCSV(Context context, Session session) {
+        String filename = "touches.csv";
+        File file = new File(context.getFilesDir(), filename);
+
+        try {
+            StringBuilder output = new StringBuilder();
+
+            for (int i = 0; i < session.getTranscribed().size() - 2; i++) {
+                for(Point p : session.getTouchPoints().get(i)) {
+                    output.append(p.x).append(",").append(p.y).append(",");
+                }
+                output.append(session.getTranscribed().get(i).get("RAW")).append("\n");
+            }
+
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+            bw.write(output.toString());
+            bw.close();
+            Log.d("FILE WRITER", "pointWriteToCSV: SUCCESS");
+        } catch (IOException e) {
+            Log.d("FILE WRITER", "pointWriteToCSV: IOException");
             e.printStackTrace();
         }
     }
@@ -67,7 +96,10 @@ public abstract class KeyboardLogger {
             progressDialog.setTitle("Uploading...");
             progressDialog.show();
 
-            String fileName = session.getSessionID() + "-" + session.getUser() + ".txt";
+            //TODO:change this back to original
+            String fileName = session.getUser() + "-" + session.getSessionID()  +  ".txt";
+            //String fileName = "touches.csv";
+            //String fileName = "keyboardConfig.txt";
             Uri filePath = Uri.fromFile(new File(context.getFilesDir(), fileName));
 
             StorageReference ref = storageReference.child("logFiles/" + fileName);

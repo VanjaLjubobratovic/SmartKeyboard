@@ -67,5 +67,6 @@
             android:textSize="15sp"/>
 
         <include layout="@layout/session_info"/>
+
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

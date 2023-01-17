@@ -1,12 +1,24 @@
 package com.example.smartkeyboard;
 
+import android.content.Context;
+import android.graphics.Point;
+import android.inputmethodservice.Keyboard;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 public class Session implements Parcelable {
     private String user, sessionID, testedKeyboard, nativeKeyboard;
@@ -24,6 +36,10 @@ public class Session implements Parcelable {
        AWPM -> adjusted WPM
      */
     private ArrayList<HashMap<String, Double>> stats;
+    private ArrayList<ArrayList<Point>> touchPoints;
+    private LinkedHashMap<String, MistakeModel> mistakes;
+
+    private Keyboard keyboard;
 
     protected Session(Parcel in){
         user = in.readString();
@@ -59,6 +75,10 @@ public class Session implements Parcelable {
         }
     };
 
+    public ArrayList<ArrayList<Point>> getTouchPoints() {
+        return touchPoints;
+    }
+
     public ArrayList<HashMap<String, Double>> getStats() {
         return stats;
     }
@@ -78,6 +98,7 @@ public class Session implements Parcelable {
     public void setTranscribed(ArrayList<HashMap<String, String>> transcribed) {
         this.transcribed = transcribed;
     }
+
 
     public String getUser() {
         return user;
@@ -125,6 +146,10 @@ public class Session implements Parcelable {
 
     public void setTypingMode(TypingMode typingMode) {
         this.typingMode = typingMode;
+    }
+
+    public void putOriginalPhrase(String phrase) {
+        this.transcribed.get(getSize()).put("ORIGINAL", phrase);
     }
     
     public String getStatsString(int ind) {
@@ -194,6 +219,7 @@ public class Session implements Parcelable {
         map.put("FINAL", "");
         map.put("ORIGINAL", "");
         transcribed.add(map);
+        touchPoints.add(new ArrayList<>());
     }
 
     public boolean transcribe(String newInput, String truePhrase) {
@@ -203,6 +229,7 @@ public class Session implements Parcelable {
         //Check if enter is pressed to cycle to next phrase
         if(newInput.length() != 0 && newInput.charAt(newInput.length() - 1) == '\n') {
             timerStop();
+            calculateMistakes(truePhrase);
             calculateErrors(truePhrase);
             nextPhrase();
             return false;
@@ -281,6 +308,67 @@ public class Session implements Parcelable {
         calculateWpm(transcribed, TER, time.get(time.size() - 1));
     }
 
+    private void calculateMistakes(String original) {
+        String finalInput = this.transcribed.get(getSize()).get("FINAL");
+        int length = 0;
+
+        if (finalInput != null) {
+            length = Math.min(original.length(), finalInput.length());
+        } else return;
+
+        for(int i = 0; i < length; i++) {
+            if (original.toCharArray()[i] != finalInput.toCharArray()[i]) {
+                String key = original.substring(i,i+1);
+                if(original.charAt(i) == ' ') {
+                    key = "SPACE";
+                }
+
+                try {
+                    MistakeModel m = mistakes.get(key);
+                    Point touch = touchPoints.get(touchPoints.size() - 1).get(i);
+                    if (m != null) {
+                        int missX = touch.x - m.getCenterX();
+                        int missY = touch.y - m.getCenterY();
+
+                        Log.d("MISTAKE", missX + " " + missY + " || " + m.getKey().width + " " + m.getKey().height);
+
+                        //If press is simply too far from correct letter we ignore such mistake
+                        if (Math.abs(missX) > m.getKey().width || Math.abs(missY) > m.getKey().height) {
+                            continue;
+                        } else if (key.equals("SPACE")) {
+                            //If there's a space in original phrase and pressed key is too far from space so it isn't a typo
+                            //the keyboard probably didn't accept user's space press, so we mitigate it here
+                            //so that correctly typed text after that isn't automatically counted as errors
+
+                            StringBuilder sb = new StringBuilder(finalInput);
+                            sb.insert(i, " ");
+                            finalInput = sb.toString();
+                            length = Math.min(finalInput.length(), original.length());
+                            touchPoints.get(touchPoints.size() - 1).add(i,touch);
+                        }
+
+                        m.addMistakes(missX, missY);
+                    } else {
+                        Log.e("ERROR", "Key: " + key + " cannot be found in map");
+                        Log.e("ERROR", mistakes.keySet().toString());
+                    }
+                } catch (IndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+    }
+
+    public void fillKeyMap(Keyboard keyboard) {
+        List<Keyboard.Key> keyList = keyboard.getKeys();
+        this.keyboard = keyboard;
+        for (Keyboard.Key k : keyList) {
+            mistakes.put(k.label.toString(), new MistakeModel(k));
+        }
+        //logMistakes();
+    }
+
     private void calculateWpm(String phrase, double TER, int time) {
         double WPM = (phrase.length() / 5.0) / ((double) time / 60000.0);
         double accuracy = (100 - TER) / 100.0;
@@ -290,10 +378,16 @@ public class Session implements Parcelable {
         stats.get(stats.size() - 1).put("AWPM", AWPM);
     }
 
+    public void addTouchPoint(int x, int y) {
+        touchPoints.get(touchPoints.size()-1).add(new Point(x, y));
+    }
+
     public void clearData() {
         this.transcribed = new ArrayList<>();
         this.time = new ArrayList<>();
         this.stats = new ArrayList<>();
+        this.touchPoints = new ArrayList<>();
+        this.mistakes = new LinkedHashMap<>();
         this.nextPhrase();
     }
 
@@ -304,6 +398,13 @@ public class Session implements Parcelable {
     public void timerStop() {
         long elapsedTime = (SystemClock.elapsedRealtime() - startTime);
         time.add((int) elapsedTime);
+    }
+
+    public void logMistakes() {
+        for(MistakeModel m : mistakes.values()) {
+            Log.d("MISTAKE", m.toString());
+            Log.d("CENTROID", m.toStringCentroid());
+        }
     }
 
     public boolean isSet() {
@@ -320,8 +421,54 @@ public class Session implements Parcelable {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public boolean isDone() {
+        if (this.numOfPhrases == this.getSize()) {
+            for(MistakeModel m : mistakes.values()) {
+                m.calculateAvgMistake();
+                m.calculateCentroid();
+            }
+            logMistakes();
+
+        }
         return this.numOfPhrases == this.getSize();
+    }
+
+    public void resizeKeyboard(Context context) {
+        Voronoi v = new Voronoi();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            v.mapToList(mistakes);
+        }
+        v.calcAdjustments();
+
+        ArrayList<DoublePoint> dp = new ArrayList<>();
+
+        for(ArrayList<DoublePoint> l : v.getKeySizes()) {
+            dp.addAll(l);
+        }
+
+        List<Keyboard.Key> keyList = keyboard.getKeys();
+
+        String filename = "keyboardConfig.txt";
+        File file = new File(context.getFilesDir(), filename);
+        if(file.delete()) {
+            System.out.println("File deleted");
+        }
+
+        try {
+            StringBuilder output = new StringBuilder();
+            for (int i = 0; i < keyList.size(); i++) {
+                output.append((int)dp.get(i).getX()).append(";").append((int)dp.get(i).getY()).append(";").append(keyList.get(i).label).append("\n");
+            }
+
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+            bw.write(output.toString());
+            bw.close();
+            Log.d("FILE WRITER", "pointWriteToCSV: SUCCESS");
+        } catch (IOException e) {
+            Log.d("FILE WRITER", "pointWriteToCSV: IOException");
+            e.printStackTrace();
+        }
     }
 
     @Override
