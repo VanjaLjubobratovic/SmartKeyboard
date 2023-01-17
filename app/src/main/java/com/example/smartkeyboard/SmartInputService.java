@@ -42,7 +42,10 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     @Override
     public View onCreateInputView() {
         keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
-        keyboard = new CustomKeyboard(this, R.xml.keys_layout);
+        //keyboard = new CustomKeyboard(this, R.xml.keys_layout);
+
+        //Read from config
+        keyboard = SmartInputService.readKeyboardConfig(getApplicationContext());
         keyboardView.setKeyboard(keyboard);
         keyboardView.setPreviewEnabled(false);
         keyboardView.setOnKeyboardActionListener(this);
@@ -66,8 +69,6 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
 
         Log.d("PROPERTIES", "Xmax: " + keyboardView.getWidth() + "\n"
                                 + "Ymax: " + keyboardView.getHeight() + "\n");
-
-
 
         if (inputConnection != null) {
             switch (primaryCode) {
@@ -106,6 +107,8 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                             break;
                         case 51:
                             //TODO resetiraj kalibraciju
+                            resetConfig();
+                            calibrateFromConfig();
                             break;
                     }
                     if(code != 49 && code !=50 && code != 51)
@@ -115,11 +118,26 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     }
 
 
-
+    private void resetConfig() {
+        String filename = "keyboardConfig.txt";
+        File file = new File(getApplicationContext().getFilesDir(), filename);
+        if(file.delete()) {
+            System.out.println("File deleted");
+        }
+    }
 
     private void calibrateFromConfig() {
+        this.keyboard = SmartInputService.readKeyboardConfig(getApplicationContext());
+
+        keyboardView.setKeyboard(keyboard);
+        keyboardView.closing();
+    }
+
+    public static CustomKeyboard readKeyboardConfig(Context c) {
+        CustomKeyboard keyboard = new CustomKeyboard(c.getApplicationContext(), R.xml.keys_layout);
+
         try {
-            File input = new File(getFilesDir().getAbsolutePath());
+            File input = new File(c.getFilesDir().getAbsolutePath());
             BufferedReader bufferedReader = new BufferedReader(new FileReader(input + "/keyboardConfig.txt"));
 
             int i = 0;
@@ -130,7 +148,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                 int x = Math.abs(Integer.parseInt(coords[0]));
                 int y = Math.abs(Integer.parseInt(coords[1]));
                 System.out.println(line + " || " + x + " " + y);
-                Keyboard.Key k = this.keyboard.getKeys().get(i);
+                Keyboard.Key k = keyboard.getKeys().get(i);
 
                 int difference = x - k.width;
 
@@ -140,7 +158,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                     }
 
                 } else {
-                    k.x = this.keyboard.getKeys().get(i - 1).x + this.keyboard.getKeys().get(i - 1).width;
+                    k.x = keyboard.getKeys().get(i - 1).x + keyboard.getKeys().get(i - 1).width;
                 }
 
                 k.width = x;
@@ -168,15 +186,14 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         }
 
         keyboard.changeKeyHeight();
-        keyboardView.setKeyboard(keyboard);
-        keyboardView.closing();
+        return keyboard;
     }
 
     private boolean isRightEdge(int index) {
         return (index == 9 || index == 18 || index == 27 || index == 31);
     }
 
-    private boolean isLeftEdge(int index) {
+    private static boolean isLeftEdge(int index) {
         return (index == 0 || index == 10 || index == 19 || index == 28);
     }
 
