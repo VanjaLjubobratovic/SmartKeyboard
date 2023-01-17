@@ -63,6 +63,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     }
 
 
+
     @Override
     public void onKey(int primaryCode, int[] keyCodes) {
         InputConnection inputConnection = getCurrentInputConnection();
@@ -86,7 +87,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                     /*caps = !caps;
                     keyboard.setShifted(caps);
                     keyboardView.invalidateAllKeys();*/
-                    calibrateFromConfig();
+                    //calibrateFromConfig();
                     break;
 
                 case Keyboard.KEYCODE_DONE:
@@ -246,7 +247,12 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+        Keyboard.Key caps = keyboard.getKeys().get(19);
+        Keyboard.Key del = keyboard.getKeys().get(27);
+        int x = (int) motionEvent.getX();
+        int y = (int) motionEvent.getY();
+
+        if (motionEvent.getAction() == MotionEvent.ACTION_UP && !(caps.isInside(x, y) || del.isInside(x, y))) {
             Log.d("TOUCH", "pressX: " + motionEvent.getX() + "\n" +
                     "pressY: " + motionEvent.getY());
 

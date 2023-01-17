@@ -243,6 +243,8 @@ public class Session implements Parcelable {
 
         if (transcribed.get(index).get("FINAL").length() > newInput.length()) {
             sb.append("<");
+            int touchIndex = touchPoints.get(touchPoints.size() - 1).size() - 1;
+            touchPoints.get(touchPoints.size() - 1).remove(touchIndex);
         } else if (sb.length() == 0) {
             /*This is here because for some reason onTextChanged is triggered
             when returning from session settings*/
