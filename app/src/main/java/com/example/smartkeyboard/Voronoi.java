@@ -65,13 +65,17 @@ public class Voronoi {
             ArrayList<DoublePoint> rowSizes = new ArrayList<>();
             int heightMistakes = 0;
             int numOfHeightMistakes = 0;
-
             int totalHeightAdjustment = 0;
+            int rowWidth = 0;
 
             for(MistakeModel m : row) {
                 if(m.getMistakeY() != 0) {
                     heightMistakes += Math.abs(m.getMistakeX());
                     numOfHeightMistakes++;
+                }
+
+                if(!isStaticKey(m.getKey().label.toString())) {
+                    rowWidth += m.getKey().width;
                 }
             }
 
@@ -79,10 +83,10 @@ public class Voronoi {
 
             totalHeightAdjustment = heightMistakes / numOfHeightMistakes;
 
-            int rowWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-            if(i == 1) {
-                rowWidth -= rowWidth * 0.1;
-            }
+            //int rowWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+            /*if(i == 1) {
+                rowWidth -= rowWidth * 0.05;
+            }*/
             int originalRowWidth = rowWidth;
             System.out.println("ROW WIDTH:" + rowWidth);
 
@@ -107,7 +111,10 @@ public class Voronoi {
                     //m.getKey().width = rowWidth / (row.size() - alreadyAdjustedKeys);
                     m.getKey().width -= m.getKey().width * Voronoi.WIDTH_SHRINK_COEF;
                 }
-                adjustedRowWidth += m.getKey().width;
+
+                if(!isStaticKey(m.getKey().label.toString())) {
+                    adjustedRowWidth += m.getKey().width;
+                }
             }
 
             //Normalizing to max width if all keys get too large

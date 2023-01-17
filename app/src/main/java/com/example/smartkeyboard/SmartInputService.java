@@ -64,9 +64,6 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     public void onKey(int primaryCode, int[] keyCodes) {
         InputConnection inputConnection = getCurrentInputConnection();
 
-        //Coordinates test
-        Keyboard.Key pressedKey = findKey(primaryCode);
-
         Log.d("PROPERTIES", "Xmax: " + keyboardView.getWidth() + "\n"
                                 + "Ymax: " + keyboardView.getHeight() + "\n");
 
@@ -142,11 +139,6 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                         k.x -= difference / 2;
                     }
 
-                   /* if(i == 10) {
-                        k.x += 3;
-                    }
-                    //-3 as not to put key spacing on the left side on the left edge key
-                    k.x -= 3;*/
                 } else {
                     k.x = this.keyboard.getKeys().get(i - 1).x + this.keyboard.getKeys().get(i - 1).width;
                 }
@@ -188,29 +180,6 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         return (index == 0 || index == 10 || index == 19 || index == 28);
     }
 
-    private Keyboard.Key findKey(int code) {
-        List<Keyboard.Key> keys = this.keyboard.getKeys();
-
-        for(Keyboard.Key k : keys) {
-            if (k.codes[0] == code) {
-                /*int index = keys.indexOf(k);
-
-                k.width += 20;
-                k.x -= 10;
-
-                if(index != 0) {
-                    keys.get(index - 1).width -= 10;
-                }
-                if (index != keys.size() - 1) {
-                    keys.get(index + 1).width -= 10;
-                    keys.get(index + 1).x += 10;
-                }
-                keyboardView.invalidateAllKeys();*/
-                return k;
-            }
-        }
-        return null;
-    }
 
     @Override
     public void onText(CharSequence charSequence) {

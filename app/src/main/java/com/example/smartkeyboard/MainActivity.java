@@ -43,7 +43,9 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -347,11 +349,63 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void mapKeys() {
-        KeyboardView keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
         Keyboard keyboard = new Keyboard(getApplicationContext(), R.xml.keys_layout);
-        keyboardView.setKeyboard(keyboard);
+
+        try {
+            File input = new File(getFilesDir().getAbsolutePath());
+            if (input.exists()) {
+                BufferedReader bufferedReader = new BufferedReader(new FileReader(input + "/keyboardConfig.txt"));
+                int i = 0;
+                String line = bufferedReader.readLine();
+
+                while (line != null) {
+                    String[] coords = line.split(";");
+                    int x = Math.abs(Integer.parseInt(coords[0]));
+                    int y = Math.abs(Integer.parseInt(coords[1]));
+                    System.out.println(line + " || " + x + " " + y);
+                    Keyboard.Key k = keyboard.getKeys().get(i);
+
+                    int difference = x - k.width;
+
+                    if(isLeftEdge(i)) {
+                        if(difference < 0) {
+                            k.x -= difference / 2;
+                        }
+
+                    } else {
+                        k.x = keyboard.getKeys().get(i - 1).x + keyboard.getKeys().get(i - 1).width;
+                    }
+
+                    k.width = x;
+                    k.height = y;
+
+                    int lookupIndex = 0;
+                    if(i > 27) {
+                        lookupIndex = 27;
+                    } else if(i > 18) {
+                        lookupIndex = 18;
+                    } else if (i > 9) {
+                        lookupIndex = 9;
+                    } else {
+                        i++;
+                        line = bufferedReader.readLine();
+                        continue;
+                    }
+
+                    k.y = keyboard.getKeys().get(lookupIndex).height + keyboard.getKeys().get(lookupIndex).y;
+                    i++;
+                    line = bufferedReader.readLine();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         session.fillKeyMap(keyboard);
+    }
+
+    private boolean isLeftEdge(int index) {
+        return (index == 0 || index == 10 || index == 19 || index == 28);
     }
 
 

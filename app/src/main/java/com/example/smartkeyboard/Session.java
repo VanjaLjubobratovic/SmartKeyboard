@@ -366,7 +366,7 @@ public class Session implements Parcelable {
         for (Keyboard.Key k : keyList) {
             mistakes.put(k.label.toString(), new MistakeModel(k));
         }
-        //logMistakes();
+        logMistakes();
     }
 
     private void calculateWpm(String phrase, double TER, int time) {
@@ -402,9 +402,11 @@ public class Session implements Parcelable {
 
     public void logMistakes() {
         for(MistakeModel m : mistakes.values()) {
-            Log.d("MISTAKE", m.toString());
-            Log.d("CENTROID", m.toStringCentroid());
+            //Log.d("MISTAKE", m.toString());
+            //Log.d("CENTROID", m.toStringCentroid());
+            Log.d("WIDTHS", m.getKey().label + ";" + m.getKey().width);
         }
+        Log.d("WIDTHS", "\n\n");
     }
 
     public boolean isSet() {
