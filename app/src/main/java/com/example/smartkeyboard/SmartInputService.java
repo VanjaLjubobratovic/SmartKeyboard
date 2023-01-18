@@ -103,11 +103,9 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                             keyboardView.setKeyboard(keyboard);
                             break;
                         case 50:
-                            //TODO pokreni kalbraciju
                             calibrateFromConfig();
                             break;
                         case 51:
-                            //TODO resetiraj kalibraciju
                             resetConfig();
                             calibrateFromConfig();
                             break;

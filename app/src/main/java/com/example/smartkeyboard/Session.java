@@ -253,11 +253,14 @@ public class Session implements Parcelable {
             sb.append(newInput.charAt(newInput.length() - 1));
         }
 
-        //transcribed.set(index, new Pair<>(sb.toString(), newInput));
-        HashMap<String, String> newMap = new HashMap<>();
+        /*transcribed.set(index, new Pair<>(sb.toString(), newInput));
+        HashMap<String, String> newMap = transcribed.get(getSize());
         newMap.put("RAW", sb.toString());
-        newMap.put("FINAL", newInput);
-        transcribed.set(index, newMap);
+        newMap.put("FINAL", newInput);*/
+
+        transcribed.get(getSize()).put("RAW", sb.toString());
+        transcribed.get(getSize()).put("FINAL", newInput);
+        transcribed.get(getSize()).put("ORIGINAL", truePhrase);
 
         Log.d("TRANSCRIBE", "RAW: " + transcribed.get(index).get("RAW") + " || TRANSCRIBED: " + transcribed.get(index).get("FINAL"));
         return true;
