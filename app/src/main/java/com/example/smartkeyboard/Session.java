@@ -40,6 +40,7 @@ public class Session implements Parcelable {
     private LinkedHashMap<String, MistakeModel> mistakes;
 
     private Keyboard keyboard;
+    private boolean isCalibrationSession;
 
     protected Session(Parcel in){
         user = in.readString();
@@ -53,13 +54,14 @@ public class Session implements Parcelable {
     }
 
     public Session() {
-        this.numOfPhrases = 40;
+        this.numOfPhrases = 30;
         this.user = "";
         this.sessionID = "";
         this.testedKeyboard = "";
         this.nativeKeyboard = "";
         this.orientation = Orientation.PORTRAIT;
         this.typingMode = TypingMode.TWO_THUMBS;
+        this.isCalibrationSession = false;
         this.clearData();
     }
 
@@ -151,7 +153,15 @@ public class Session implements Parcelable {
     public void putOriginalPhrase(String phrase) {
         this.transcribed.get(getSize()).put("ORIGINAL", phrase);
     }
-    
+
+    public boolean isCalibrationSession() {
+        return isCalibrationSession;
+    }
+
+    public void setCalibrationSession(boolean calibrationSession) {
+        isCalibrationSession = calibrationSession;
+    }
+
     public String getStatsString(int ind) {
         HashMap<String, Double> errsMap;
 
@@ -243,6 +253,12 @@ public class Session implements Parcelable {
 
         if (transcribed.get(index).get("FINAL").length() > newInput.length()) {
             sb.append("<");
+            int touchIndex = touchPoints.get(touchPoints.size() - 1).size() - 1;
+            try {
+                touchPoints.get(touchPoints.size() - 1).remove(touchIndex);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
         } else if (sb.length() == 0) {
             /*This is here because for some reason onTextChanged is triggered
             when returning from session settings*/
@@ -251,11 +267,14 @@ public class Session implements Parcelable {
             sb.append(newInput.charAt(newInput.length() - 1));
         }
 
-        //transcribed.set(index, new Pair<>(sb.toString(), newInput));
-        HashMap<String, String> newMap = new HashMap<>();
+        /*transcribed.set(index, new Pair<>(sb.toString(), newInput));
+        HashMap<String, String> newMap = transcribed.get(getSize());
         newMap.put("RAW", sb.toString());
-        newMap.put("FINAL", newInput);
-        transcribed.set(index, newMap);
+        newMap.put("FINAL", newInput);*/
+
+        transcribed.get(getSize()).put("RAW", sb.toString());
+        transcribed.get(getSize()).put("FINAL", newInput);
+        transcribed.get(getSize()).put("ORIGINAL", truePhrase);
 
         Log.d("TRANSCRIBE", "RAW: " + transcribed.get(index).get("RAW") + " || TRANSCRIBED: " + transcribed.get(index).get("FINAL"));
         return true;
@@ -339,12 +358,15 @@ public class Session implements Parcelable {
                             //If there's a space in original phrase and pressed key is too far from space so it isn't a typo
                             //the keyboard probably didn't accept user's space press, so we mitigate it here
                             //so that correctly typed text after that isn't automatically counted as errors
-
                             StringBuilder sb = new StringBuilder(finalInput);
-                            sb.insert(i, " ");
+
+                            if(original.toCharArray()[i+1] == finalInput.toCharArray()[i]) {
+                                sb.insert(i, " ");
+                                touchPoints.get(touchPoints.size() - 1).add(i,touch);
+                            }
+
                             finalInput = sb.toString();
                             length = Math.min(finalInput.length(), original.length());
-                            touchPoints.get(touchPoints.size() - 1).add(i,touch);
                         }
 
                         m.addMistakes(missX, missY);
@@ -366,7 +388,7 @@ public class Session implements Parcelable {
         for (Keyboard.Key k : keyList) {
             mistakes.put(k.label.toString(), new MistakeModel(k));
         }
-        //logMistakes();
+        logMistakes();
     }
 
     private void calculateWpm(String phrase, double TER, int time) {
@@ -402,9 +424,11 @@ public class Session implements Parcelable {
 
     public void logMistakes() {
         for(MistakeModel m : mistakes.values()) {
-            Log.d("MISTAKE", m.toString());
-            Log.d("CENTROID", m.toStringCentroid());
+            //Log.d("MISTAKE", m.toString());
+            //Log.d("CENTROID", m.toStringCentroid());
+            Log.d("WIDTHS", m.getKey().label + ";" + m.getKey().width);
         }
+        Log.d("WIDTHS", "\n\n");
     }
 
     public boolean isSet() {

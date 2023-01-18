@@ -42,7 +42,10 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     @Override
     public View onCreateInputView() {
         keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
-        keyboard = new CustomKeyboard(this, R.xml.keys_layout);
+        //keyboard = new CustomKeyboard(this, R.xml.keys_layout);
+
+        //Read from config
+        keyboard = SmartInputService.readKeyboardConfig(getApplicationContext());
         keyboardView.setKeyboard(keyboard);
         keyboardView.setPreviewEnabled(false);
         keyboardView.setOnKeyboardActionListener(this);
@@ -60,17 +63,13 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     }
 
 
+
     @Override
     public void onKey(int primaryCode, int[] keyCodes) {
         InputConnection inputConnection = getCurrentInputConnection();
 
-        //Coordinates test
-        Keyboard.Key pressedKey = findKey(primaryCode);
-
         Log.d("PROPERTIES", "Xmax: " + keyboardView.getWidth() + "\n"
                                 + "Ymax: " + keyboardView.getHeight() + "\n");
-
-
 
         if (inputConnection != null) {
             switch (primaryCode) {
@@ -88,7 +87,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                     /*caps = !caps;
                     keyboard.setShifted(caps);
                     keyboardView.invalidateAllKeys();*/
-                    calibrateFromConfig();
+                    //calibrateFromConfig();
                     break;
 
                 case Keyboard.KEYCODE_DONE:
@@ -104,11 +103,11 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                             keyboardView.setKeyboard(keyboard);
                             break;
                         case 50:
-                            //TODO pokreni kalbraciju
                             calibrateFromConfig();
                             break;
                         case 51:
-                            //TODO resetiraj kalibraciju
+                            resetConfig();
+                            calibrateFromConfig();
                             break;
                     }
                     if(code != 49 && code !=50 && code != 51)
@@ -118,11 +117,26 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
     }
 
 
-
+    private void resetConfig() {
+        String filename = "keyboardConfig.txt";
+        File file = new File(getApplicationContext().getFilesDir(), filename);
+        if(file.delete()) {
+            System.out.println("File deleted");
+        }
+    }
 
     private void calibrateFromConfig() {
+        this.keyboard = SmartInputService.readKeyboardConfig(getApplicationContext());
+
+        keyboardView.setKeyboard(keyboard);
+        keyboardView.closing();
+    }
+
+    public static CustomKeyboard readKeyboardConfig(Context c) {
+        CustomKeyboard keyboard = new CustomKeyboard(c.getApplicationContext(), R.xml.keys_layout);
+
         try {
-            File input = new File(getFilesDir().getAbsolutePath());
+            File input = new File(c.getFilesDir().getAbsolutePath());
             BufferedReader bufferedReader = new BufferedReader(new FileReader(input + "/keyboardConfig.txt"));
 
             int i = 0;
@@ -133,7 +147,7 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                 int x = Math.abs(Integer.parseInt(coords[0]));
                 int y = Math.abs(Integer.parseInt(coords[1]));
                 System.out.println(line + " || " + x + " " + y);
-                Keyboard.Key k = this.keyboard.getKeys().get(i);
+                Keyboard.Key k = keyboard.getKeys().get(i);
 
                 int difference = x - k.width;
 
@@ -142,13 +156,8 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
                         k.x -= difference / 2;
                     }
 
-                   /* if(i == 10) {
-                        k.x += 3;
-                    }
-                    //-3 as not to put key spacing on the left side on the left edge key
-                    k.x -= 3;*/
                 } else {
-                    k.x = this.keyboard.getKeys().get(i - 1).x + this.keyboard.getKeys().get(i - 1).width;
+                    k.x = keyboard.getKeys().get(i - 1).x + keyboard.getKeys().get(i - 1).width;
                 }
 
                 k.width = x;
@@ -176,41 +185,17 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
         }
 
         keyboard.changeKeyHeight();
-        keyboardView.setKeyboard(keyboard);
-        keyboardView.closing();
+        return keyboard;
     }
 
     private boolean isRightEdge(int index) {
         return (index == 9 || index == 18 || index == 27 || index == 31);
     }
 
-    private boolean isLeftEdge(int index) {
+    private static boolean isLeftEdge(int index) {
         return (index == 0 || index == 10 || index == 19 || index == 28);
     }
 
-    private Keyboard.Key findKey(int code) {
-        List<Keyboard.Key> keys = this.keyboard.getKeys();
-
-        for(Keyboard.Key k : keys) {
-            if (k.codes[0] == code) {
-                /*int index = keys.indexOf(k);
-
-                k.width += 20;
-                k.x -= 10;
-
-                if(index != 0) {
-                    keys.get(index - 1).width -= 10;
-                }
-                if (index != keys.size() - 1) {
-                    keys.get(index + 1).width -= 10;
-                    keys.get(index + 1).x += 10;
-                }
-                keyboardView.invalidateAllKeys();*/
-                return k;
-            }
-        }
-        return null;
-    }
 
     @Override
     public void onText(CharSequence charSequence) {
@@ -260,7 +245,12 @@ public class SmartInputService extends InputMethodService implements KeyboardVie
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+        Keyboard.Key caps = keyboard.getKeys().get(19);
+        Keyboard.Key del = keyboard.getKeys().get(27);
+        int x = (int) motionEvent.getX();
+        int y = (int) motionEvent.getY();
+
+        if (motionEvent.getAction() == MotionEvent.ACTION_UP && !(caps.isInside(x, y) || del.isInside(x, y))) {
             Log.d("TOUCH", "pressX: " + motionEvent.getX() + "\n" +
                     "pressY: " + motionEvent.getY());
 

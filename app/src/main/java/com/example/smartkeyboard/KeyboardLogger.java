@@ -46,6 +46,7 @@ public abstract class KeyboardLogger {
                     + session.getTime().replace(" ", "") + ";TER-" + String.format("%.2f", stat.get("TER"))
                     + ";WPM-" + String.format("%.2f", stat.get("WPM")) + ";AWPM-" + String.format("%.2f", stat.get("AWPM"))
                     + ";ORIGINAL-" +  phrases.get("ORIGINAL") + ";FINAL-" +  phrases.get("FINAL") + ";RAW-" + phrases.get("RAW")
+                    + ";KEYBOARD-" + session.getNativeKeyboard()
                     + ";INDEX-" + (session.getSize() - 1) + "\n";
 
             BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
@@ -96,10 +97,8 @@ public abstract class KeyboardLogger {
             progressDialog.setTitle("Uploading...");
             progressDialog.show();
 
-            //TODO:change this back to original
             String fileName = session.getUser() + "-" + session.getSessionID()  +  ".txt";
             //String fileName = "touches.csv";
-            //String fileName = "keyboardConfig.txt";
             Uri filePath = Uri.fromFile(new File(context.getFilesDir(), fileName));
 
             StorageReference ref = storageReference.child("logFiles/" + fileName);
@@ -110,7 +109,25 @@ public abstract class KeyboardLogger {
                         Toast.makeText(context, "Log successfully uploaded!", Toast.LENGTH_SHORT).show(); })
                     .addOnFailureListener(
                             e -> {progressDialog.dismiss();
-                                Toast.makeText(context, "Log upload failed!", Toast.LENGTH_SHORT).show(); })
+                                Toast.makeText(context, "Log upload failed! :(", Toast.LENGTH_SHORT).show(); })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                            double progress = (100.0 * snapshot.getBytesTransferred() / snapshot.getTotalByteCount());
+                            progressDialog.setMessage("Uploaded " + (int)progress + "%");
+                        }
+                    });
+
+            fileName = "keyboardConfig.txt";
+            filePath = Uri.fromFile(new File(context.getFilesDir(), fileName));
+            ref = storageReference.child("logFiles/" + session.getUser() + "-" + fileName);
+            ref.putFile(filePath)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(context, "Keyboard config successfuly uploaded!", Toast.LENGTH_SHORT).show(); })
+                    .addOnFailureListener(
+                            e -> {progressDialog.dismiss();
+                                Toast.makeText(context, "Keyboard config log upload failed! :(", Toast.LENGTH_SHORT).show(); })
                     .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
@@ -124,6 +141,7 @@ public abstract class KeyboardLogger {
             Toast.makeText(context, "Log upload failed! Reason: " + e, Toast.LENGTH_LONG).show();
         }
     }
+
 
     public static void readTest(Context context, Session session) {
         try {

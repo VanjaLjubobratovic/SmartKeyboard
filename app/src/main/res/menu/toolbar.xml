@@ -10,10 +10,15 @@
         android:id="@+id/sessionSettings"
         android:icon="@drawable/ic_baseline_app_settings_alt_24"
         android:title="@string/session_settings"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
     <item
         android:id="@+id/logSettings"
         android:icon="@drawable/ic_baseline_text_snippet_24"
         android:title="@string/logging_settings"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/bringUp"
+        android:icon="@drawable/ic_baseline_keyboard_24"
+        android:title="Bring up keyboard"
+        app:showAsAction="always"/>
 </menu>

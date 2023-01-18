@@ -115,7 +115,7 @@ public class SessionSettingsActivity extends AppCompatActivity {
         usernamePref = sharedPref.getString("username", "username");
         sessionPref = sharedPref.getString("session_name", "session1");
         keyboardPref = sharedPref.getString("keyboard", "default");
-        phraseNumberPref = sharedPref.getString("number_of_phrases", "40");
+        phraseNumberPref = sharedPref.getString("number_of_phrases", "30");
         orientationPref = sharedPref.getString("orientation", "PORTRAIT");
         interactionPref = sharedPref.getString("interaction", "TWO_THUMBS");
     }
@@ -140,7 +140,7 @@ public class SessionSettingsActivity extends AppCompatActivity {
             keyboardString = "default";
         }
         if(numberOfPhrases.isEmpty()){
-            numberOfPhrases = "40";
+            numberOfPhrases = "30";
         }
 
         if(usernameString.equals(usernamePref) && sessionNameString.equals(sessionPref) && keyboardString.equals(keyboardPref) && numberOfPhrases.equals(phraseNumberPref)
