@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">SmartKeyboard</string>
     <string name="session_settings">Session settings</string>
-    <string name="logging_settings">Logging Settings</string>
+    <string name="logging_settings">Upload Log</string>
     <string name="phrase_to_input">Phrase to input</string>
     <string name="generate_phrase">New session not yet started</string>
     <string name="session_info">Session info</string>

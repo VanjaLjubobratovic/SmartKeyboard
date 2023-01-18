@@ -40,6 +40,7 @@ public class Session implements Parcelable {
     private LinkedHashMap<String, MistakeModel> mistakes;
 
     private Keyboard keyboard;
+    private boolean isCalibrationSession;
 
     protected Session(Parcel in){
         user = in.readString();
@@ -53,13 +54,14 @@ public class Session implements Parcelable {
     }
 
     public Session() {
-        this.numOfPhrases = 40;
+        this.numOfPhrases = 30;
         this.user = "";
         this.sessionID = "";
         this.testedKeyboard = "";
         this.nativeKeyboard = "";
         this.orientation = Orientation.PORTRAIT;
         this.typingMode = TypingMode.TWO_THUMBS;
+        this.isCalibrationSession = false;
         this.clearData();
     }
 
@@ -151,7 +153,15 @@ public class Session implements Parcelable {
     public void putOriginalPhrase(String phrase) {
         this.transcribed.get(getSize()).put("ORIGINAL", phrase);
     }
-    
+
+    public boolean isCalibrationSession() {
+        return isCalibrationSession;
+    }
+
+    public void setCalibrationSession(boolean calibrationSession) {
+        isCalibrationSession = calibrationSession;
+    }
+
     public String getStatsString(int ind) {
         HashMap<String, Double> errsMap;
 
@@ -244,7 +254,11 @@ public class Session implements Parcelable {
         if (transcribed.get(index).get("FINAL").length() > newInput.length()) {
             sb.append("<");
             int touchIndex = touchPoints.get(touchPoints.size() - 1).size() - 1;
-            touchPoints.get(touchPoints.size() - 1).remove(touchIndex);
+            try {
+                touchPoints.get(touchPoints.size() - 1).remove(touchIndex);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
         } else if (sb.length() == 0) {
             /*This is here because for some reason onTextChanged is triggered
             when returning from session settings*/

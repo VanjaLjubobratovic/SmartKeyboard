@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
-
+    private final int CALIBRATION_PHRASES = 30;
     private MaterialButton generateBtn;
     private ArrayList<String> phrases;
     private int phraseIndex;
@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
         phraseInput.setEnabled(false);
 
-        phrases = readPhrases();
+        phrases = readPhrases(false);
         session = new Session();
 
         checkMemory();
@@ -121,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
                     phraseInput.getText().clear();
                 } else {
                     //New line detected, input finished
+                    checkIfInputChanged();
                     if(!session.transcribe(charSequence.toString(), generateBtn.getText().toString())) {
                         KeyboardLogger.writeToCSV(getApplicationContext(), session);
                         KeyboardLogger.writePointsToCSV(getApplicationContext(), session);
@@ -197,6 +198,10 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "onOptionsItemSelected: SESSION INIT");
                 return true;
 
+            case R.id.bringUp:
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -212,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
                 .setCancelable(false);
 
         builder.setPositiveButton(R.string.OK, (dialogInterface, i) -> {
-            initTestSession();
+            isTestDialog();
         });
 
         builder.setNegativeButton(R.string.cancel, ((dialogInterface, i) -> {
@@ -222,9 +227,36 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    public ArrayList<String> readPhrases() {
+    public void isTestDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage("Is this a calibration session?")
+                .setTitle("Calibrate?")
+                .setCancelable(false);
+
+        builder.setPositiveButton("YES", (dialogInterface, i) -> {
+            initTestSession(true);
+        });
+
+        builder.setNegativeButton("NO", ((dialogInterface, i) -> {
+            initTestSession(false);
+        }));
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    public ArrayList<String> readPhrases(boolean isCalibration) {
         ArrayList<String> readLines = new ArrayList<>();
-        try (InputStream is = getResources().openRawResource(R.raw.phrases2)){
+        int resource;
+
+        //Loading different set depending on whether we are calibrating or not
+        if(isCalibration) {
+             resource = R.raw.calibrationphrases;
+        } else {
+            resource = R.raw.phrases2;
+        }
+
+        try (InputStream is = getResources().openRawResource(resource)){
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String line = reader.readLine();
 
@@ -261,7 +293,12 @@ public class MainActivity extends AppCompatActivity {
 
         phraseResultTV.setText(currentInfo);
 
-        generateBtn.setText(phrases.get(session.getSize()));
+        //I was young and dumb when I was writing functions for getting sizes
+        int size = session.getSize();
+        if(size == session.getNumOfPhrases())
+            size--;
+
+        generateBtn.setText(phrases.get(size));
 
         session.putOriginalPhrase(generateBtn.getText().toString());
 
@@ -273,16 +310,20 @@ public class MainActivity extends AppCompatActivity {
         //Check if done
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             if (session.isDone()) {
-                KeyboardLogger.readTest(getApplicationContext(), session);
+                //KeyboardLogger.readTest(getApplicationContext(), session);
                 phraseInput.setEnabled(false);
                 generateBtn.setText("New session not yet started");
                 Toast.makeText(this, "You have successfully finished with this session!", Toast.LENGTH_LONG).show();
-                session.resizeKeyboard(getApplicationContext());
+
+                if(session.isCalibrationSession()) {
+                    session.resizeKeyboard(getApplicationContext());
+                }
             }
         }
     }
 
-    public void initTestSession() {
+    public void initTestSession(boolean isCalibration) {
+        phrases = readPhrases(isCalibration);
         if(phrases != null) {
             phraseIndex = 0;
             Collections.shuffle(phrases);
@@ -290,8 +331,18 @@ public class MainActivity extends AppCompatActivity {
             phraseInput.setEnabled(true);
 
             session.clearData();
+            session.setCalibrationSession(isCalibration);
             session.putOriginalPhrase(generateBtn.getText().toString());
             phraseInput.setText("");
+
+            //In case of calibration session number of phrases is forced
+            if(isCalibration) {
+                session.setNumOfPhrases(CALIBRATION_PHRASES);
+                SharedPreferences sharedPref = getSharedPreferences("sessionSettings", Context.MODE_PRIVATE);
+                SharedPreferences.Editor myEdit = sharedPref.edit();
+                myEdit.putString("number_of_phrases", Integer.toString(CALIBRATION_PHRASES));
+            }
+
             setSessionText();
             mapKeys();
 
@@ -317,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
         handlingTV.setText(R.string.handling);
         handlingTV.append(" " + session.getTypingMode().toString() + " @ " + session.getOrientation());
 
-        //checkIfInputChanged();
+        checkIfInputChanged();
 
         nativeKeyboardTV.setText(R.string.native_keyboard);
         nativeKeyboardTV.append(" " + session.getNativeKeyboard());
@@ -336,8 +387,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkIfInputChanged() {
         //TODO: Fix
-        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-        session.setNativeKeyboard(Settings.Secure.getString(getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD));
+        /*InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+        String name = imm.getCurrentInputMethodSubtype().getDisplayName(getApplicationContext(), getPackageName(), getApplicationInfo()).toString();*/
+        String name = Settings.Secure.getString(getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD);
+        //Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
+
+        session.setNativeKeyboard(name);
         nativeKeyboardTV.setText(R.string.native_keyboard);
         nativeKeyboardTV.append(" " + session.getNativeKeyboard());
     }
@@ -350,13 +405,13 @@ public class MainActivity extends AppCompatActivity {
                 if(changed) {
                     session = intent.getParcelableExtra("sessionDetails");
                     Log.d("ACTIVITY_RESULT", session.getSessionID());
-                    initTestSession();
+                    isTestDialog();
                 }
             } else {
                 Toast.makeText(this, "Intent null", Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(this, "Result code not 49" + " " + result.getResultCode(), Toast.LENGTH_SHORT).show();
+           //Toast.makeText(this, "Result code not 49" + " " + result.getResultCode(), Toast.LENGTH_SHORT).show();
         }
     });
 }
