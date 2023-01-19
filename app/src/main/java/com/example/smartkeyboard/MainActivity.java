@@ -54,6 +54,8 @@ import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
     private final int CALIBRATION_PHRASES = 30;
+    private final int TEST_PHRASES = 20;
+
     private MaterialButton generateBtn;
     private ArrayList<String> phrases;
     private int phraseIndex;
@@ -336,13 +338,18 @@ public class MainActivity extends AppCompatActivity {
             phraseInput.setText("");
 
             //In case of calibration session number of phrases is forced
+            SharedPreferences sharedPref = getSharedPreferences("sessionSettings", Context.MODE_PRIVATE);
+            SharedPreferences.Editor myEdit = sharedPref.edit();
+
             if(isCalibration) {
                 session.setNumOfPhrases(CALIBRATION_PHRASES);
-                SharedPreferences sharedPref = getSharedPreferences("sessionSettings", Context.MODE_PRIVATE);
-                SharedPreferences.Editor myEdit = sharedPref.edit();
                 myEdit.putString("number_of_phrases", Integer.toString(CALIBRATION_PHRASES));
+            } else {
+                session.setNumOfPhrases(TEST_PHRASES);
+                myEdit.putString("number_of_phrases", Integer.toString(TEST_PHRASES));
             }
 
+            myEdit.apply();
             setSessionText();
             mapKeys();
 
