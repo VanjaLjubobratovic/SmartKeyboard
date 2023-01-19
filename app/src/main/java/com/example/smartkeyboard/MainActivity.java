@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
-    private final int CALIBRATION_PHRASES = 30;
+    private final int CALIBRATION_PHRASES = 60;
     private final int TEST_PHRASES = 20;
 
     private MaterialButton generateBtn;
