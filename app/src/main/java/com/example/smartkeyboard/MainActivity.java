@@ -53,8 +53,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
-    private final int CALIBRATION_PHRASES = 60;
-    private final int TEST_PHRASES = 20;
+    private final int CALIBRATION_PHRASES = 50;
+    private final int TEST_PHRASES = 25;
 
     private MaterialButton generateBtn;
     private ArrayList<String> phrases;
@@ -343,6 +343,7 @@ public class MainActivity extends AppCompatActivity {
 
             if(isCalibration) {
                 session.setNumOfPhrases(CALIBRATION_PHRASES);
+                phrases.addAll(phrases);
                 myEdit.putString("number_of_phrases", Integer.toString(CALIBRATION_PHRASES));
             } else {
                 session.setNumOfPhrases(TEST_PHRASES);
