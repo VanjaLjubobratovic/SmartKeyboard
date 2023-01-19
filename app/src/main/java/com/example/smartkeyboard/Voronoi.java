@@ -14,7 +14,7 @@ import java.util.LinkedHashMap;
 public class Voronoi {
     public static final double WIDTH_SHRINK_COEF = 0.15;
     public static final double WIDTH_EXPAND_COEF = 0.60;
-    public static final double HEIGHT_EXPAND_COEF = 0.25;
+    public static final double HEIGHT_EXPAND_COEF = 0.35;
     public static final double MIN_NUM_OF_MISTAKES = 2;
 
     private ArrayList<ArrayList<MistakeModel>> optimalPoints;
@@ -123,7 +123,7 @@ public class Voronoi {
 
             for (MistakeModel m : row) {
                 //adjusting height
-                m.getKey().height = m.getKey().height + (int)(totalHeightAdjustment * Voronoi.HEIGHT_EXPAND_COEF);
+                m.getKey().height += m.getKey().height * ((double)totalHeightAdjustment / (double)m.getKey().height) * HEIGHT_EXPAND_COEF;
 
 
                 //We don't adjust DONE, SPACE, DELETE, CAPS by width
@@ -162,7 +162,7 @@ public class Voronoi {
     }
 
     private boolean isStaticKey(String label) {
-        return label.equals("SPACE") || label.equals("DEL") || label.equals("CAPS") || label.equals("DONE");
+        return label.equals("SPACE") || label.equals("DEL") || label.equals("CAPS") || label.equals("DONE") || label.equals(",") || label.equals("/");
     }
 
 
