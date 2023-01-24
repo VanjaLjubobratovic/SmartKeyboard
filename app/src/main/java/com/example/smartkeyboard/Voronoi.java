@@ -70,7 +70,7 @@ public class Voronoi {
 
             for(MistakeModel m : row) {
                 if(m.getMistakeY() != 0) {
-                    heightMistakes += Math.abs(m.getMistakeX());
+                    heightMistakes += Math.abs(m.getMistakeY());
                     numOfHeightMistakes++;
                 }
 
